@@ -1027,14 +1027,14 @@ def earnings_trading_screener() -> List[TextContent]:
     
     固定フィルタ条件（変更不可）：
     f=cap_smallover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,sh_avgvol_o200,sh_price_o10,ta_change_u,ta_perf_0to-4w,ta_volatility_1tox&ft=4&o=-epssurprise&ar=60
-    
+
     - 時価総額：スモール以上 ($300M+)
     - 決算発表：昨日の引け後または今日の寄り付き前
     - EPS予想：上方修正
     - 平均出来高：200,000以上
     - 株価：$10以上
     - 価格変動：上昇トレンド
-    - 4週パフォーマンス：0%から下落（下落後回復候補）
+    - 4週パフォーマンス：月間プラス（Month Above 0%）
     - ボラティリティ：1倍以上
     - 株式のみ
     - EPSサプライズ降順ソート

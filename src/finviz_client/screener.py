@@ -194,7 +194,7 @@ class FinvizScreener(FinvizClient):
         決算トレード対象銘柄のスクリーニング（固定条件）
         
         固定フィルタ: f=cap_smallover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,sh_avgvol_o200,sh_price_o10,ta_change_u,ta_perf_0to-4w,ta_volatility_1tox&ft=4&o=-epssurprise&ar=60
-        
+
         Returns:
             StockData オブジェクトのリスト
         """
@@ -623,7 +623,7 @@ class FinvizScreener(FinvizClient):
         - 平均出来高：200K以上 (sh_avgvol_o200)
         - 株価：$30以上 (sh_price_o30)
         - 価格変動：上昇 (ta_change_u)
-        - 4週パフォーマンス：0%から下落（下落後回復候補） (ta_perf_0to-4w)
+        - 4週パフォーマンス：月間プラス（Month Above 0%） (ta_perf_0to-4w)
         - 株式のみ (ft=4)
         - EPSサプライズ降順ソート (o=-epssurprise)
         - 最大結果件数：60件 (ar=60)
@@ -651,7 +651,7 @@ class FinvizScreener(FinvizClient):
             # 価格変動：上昇
             'price_change_positive': True,
             
-            # 4週パフォーマンス：0%から下落（下落後回復候補）
+            # 4週パフォーマンス：月間プラス（Month Above 0%）
             'performance_4w_range': '0_to_negative_4w',
             
             # 株式のみ

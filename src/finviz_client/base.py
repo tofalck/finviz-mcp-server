@@ -472,7 +472,7 @@ class FinvizClient:
             if 'price_change_positive' in filters and filters['price_change_positive']:
                 filter_parts.append('ta_change_u')
             
-            # 7. 4週パフォーマンスフィルタ: ta_perf_0to-4w
+            # 7. 4週パフォーマンスフィルタ（月間プラス / Month Above 0%）: ta_perf_0to-4w
             if 'performance_4w_range' in filters and filters['performance_4w_range'] == '0_to_negative_4w':
                 filter_parts.append('ta_perf_0to-4w')
             
@@ -922,7 +922,7 @@ class FinvizClient:
             change_value = self._safe_numeric_conversion(filters["price_change_min"])
             params['f'] = params.get('f', '') + f'ta_change_u{change_value},'
         
-        # 4週パフォーマンス範囲フィルタ
+        # 4週パフォーマンス範囲フィルタ（月間プラス / Month Above 0%）
         if 'performance_4w_range' in filters and filters['performance_4w_range'] == '0_to_negative_4w':
             params['f'] = params.get('f', '') + 'ta_perf_0to-4w,'
         
