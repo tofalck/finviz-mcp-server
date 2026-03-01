@@ -154,9 +154,9 @@ Configure in `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "finviz": {
-      "command": "/Users/takueisaotome/PycharmProjects/finviz-mcp-server/venv/bin/finviz-mcp-server",
+      "command": "/path/to/finviz-mcp-server/venv/bin/finviz-mcp-server",
       "args": [],
-      "cwd": "/Users/takueisaotome/PycharmProjects/finviz-mcp-server",
+      "cwd": "/path/to/finviz-mcp-server",
       "env": {
         "FINVIZ_API_KEY": "your_finviz_elite_api_key",
         "LOG_LEVEL": "INFO",
@@ -175,9 +175,9 @@ Claude Code automatically detects this CLAUDE.md file and the MCP server configu
 {
   "mcpServers": {
     "finviz": {
-      "command": "/Users/takueisaotome/PycharmProjects/finviz-mcp-server/venv/bin/finviz-mcp-server",
+      "command": "/path/to/finviz-mcp-server/venv/bin/finviz-mcp-server",
       "args": [],
-      "cwd": "/Users/takueisaotome/PycharmProjects/finviz-mcp-server",
+      "cwd": "/path/to/finviz-mcp-server",
       "env": {
         "FINVIZ_API_KEY": "${FINVIZ_API_KEY}",
         "LOG_LEVEL": "INFO",
