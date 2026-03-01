@@ -3815,7 +3815,7 @@ def custom_screener(
             price_str = f"${price:.2f}" if price is not None else "N/A"
             change_str = f"{change:+.2f}%" if change is not None else "N/A"
             vol_str = format_large_number(volume) if volume is not None else "N/A"
-            mcap_str = format_large_number(market_cap) if market_cap is not None else "N/A"
+            mcap_str = format_large_number(market_cap * 1e6) if market_cap is not None else "N/A"
             pe_str = f"{pe:.1f}" if pe is not None else "N/A"
             rv_str = f"{rel_volume:.2f}" if rel_volume is not None else "N/A"
 

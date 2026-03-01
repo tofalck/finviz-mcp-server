@@ -283,7 +283,7 @@ class TestCustomScreenerTool:
             price=195.50,
             price_change=-1.25,
             volume=54000000,
-            market_cap=3000000000000,
+            market_cap=3000000,  # FinViz CSV returns market cap in millions ($3T)
             pe_ratio=30.5,
             relative_volume=1.12,
             dividend_yield=0.55,
