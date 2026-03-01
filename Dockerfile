@@ -4,11 +4,6 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements first for better caching
 COPY requirements.txt .
 
@@ -20,8 +15,8 @@ COPY src/ ./src/
 COPY pyproject.toml .
 COPY run_server.py .
 
-# Install the package in editable mode
-RUN pip install --no-cache-dir -e .
+# Install the package
+RUN pip install --no-cache-dir .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
