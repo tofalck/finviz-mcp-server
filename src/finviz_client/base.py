@@ -1123,7 +1123,8 @@ class FinvizClient:
             
             # CSV データを取得
             logger.info(f"Finviz CSV export URL: {self.EXPORT_URL}")
-            logger.info(f"Finviz CSV export params: {finviz_params}")
+            redacted_params = {k: '***' if k == 'auth' else v for k, v in finviz_params.items()}
+            logger.info(f"Finviz CSV export params: {redacted_params}")
             response = self._make_request(self.EXPORT_URL, finviz_params)
             
             # レスポンスがCSVかHTMLかをチェック
