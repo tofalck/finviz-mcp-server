@@ -1988,6 +1988,24 @@ def cli_main():
         host = os.getenv("MCP_HOST", "0.0.0.0")
         port = int(os.getenv("MCP_PORT", "8000"))
         logger.info(f"Starting MCP server with {transport} transport on {host}:{port}")
+
+        # DNS rebinding protection: disabled by default for remote/Docker deployments
+        # where the network perimeter controls access. Set MCP_ENABLE_DNS_REBINDING=true
+        # to re-enable it (e.g. when running on localhost or behind a reverse proxy).
+        # When enabled, only loopback Host headers are allowed by default.
+        dns_rebinding = os.getenv("MCP_ENABLE_DNS_REBINDING", "false").lower() == "true"
+        from mcp.server.transport_security import TransportSecuritySettings
+        if dns_rebinding:
+            server.settings.transport_security = TransportSecuritySettings(
+                enable_dns_rebinding_protection=True,
+                allowed_hosts=["127.0.0.1:*", "localhost:*", "[::1]:*"],
+                allowed_origins=["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"],
+            )
+        else:
+            server.settings.transport_security = TransportSecuritySettings(
+                enable_dns_rebinding_protection=False
+            )
+
         import uvicorn
         uvicorn.run(server.sse_app, host=host, port=port)
     else:
