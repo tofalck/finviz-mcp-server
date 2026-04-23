@@ -1981,7 +1981,7 @@ def technical_analysis_screener(
         return [TextContent(type="text", text=f"Error: {str(e)}")]
 
 def cli_main():
-    """CLI entry point - supports stdio (default) and sse transport for Docker"""
+    """CLI entry point - supports stdio (default), sse, and streamable-http transport for Docker"""
     transport = os.getenv("MCP_TRANSPORT", "stdio")
 
     if transport in ("sse", "streamable-http"):
@@ -2006,8 +2006,18 @@ def cli_main():
                 enable_dns_rebinding_protection=False
             )
 
+        # Combine SSE (/sse, /messages/) and streamable-http (/mcp) routes into
+        # a single Starlette app so both transports are available simultaneously.
+        # The streamable-http app's lifespan is used to initialize the session
+        # manager task group required by /mcp; SSE routes need no lifespan.
         import uvicorn
-        uvicorn.run(server.sse_app, host=host, port=port)
+        from starlette.applications import Starlette
+        if transport == "streamable-http":
+            starlette_app = server.streamable_http_app()
+            uvicorn.run(starlette_app, host=host, port=port)
+        else:
+            starlette_app = server.sse_app()
+            uvicorn.run(starlette_app, host=host, port=port)
     else:
         server.run()
 
