@@ -2006,18 +2006,12 @@ def cli_main():
                 enable_dns_rebinding_protection=False
             )
 
-        # Combine SSE (/sse, /messages/) and streamable-http (/mcp) routes into
-        # a single Starlette app so both transports are available simultaneously.
-        # The streamable-http app's lifespan is used to initialize the session
-        # manager task group required by /mcp; SSE routes need no lifespan.
-        import uvicorn
-        from starlette.applications import Starlette
-        if transport == "streamable-http":
-            starlette_app = server.streamable_http_app()
-            uvicorn.run(starlette_app, host=host, port=port)
-        else:
-            starlette_app = server.sse_app()
-            uvicorn.run(starlette_app, host=host, port=port)
+        # Use server.run() directly after patching host/port into settings.
+        # This avoids passing Starlette instances to uvicorn.run() which can
+        # trigger false "ASGI app factory detected" warnings and routing issues.
+        server.settings.host = host
+        server.settings.port = port
+        server.run(transport=transport)
     else:
         server.run()
 
