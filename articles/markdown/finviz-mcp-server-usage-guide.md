@@ -57,21 +57,21 @@ pip install -e .
 
 > 💡 **Finviz Elite APIキー取得方法**:
 > 1. [Finviz Elite](https://finviz.com/elite.ashx)で購読（月額約$25）
-> 2. アカウントにログイン後、Account Settings → API Access
-> 3. Generate New API Key をクリック
-> 4. 生成されたキーをコピー（次のStep 3で使用）
+2. After logging into your account, go to Account Settings → API Access
+3. Click Generate New API Key
+4. Copy the generated key (used in Step 3 below)
 
-> ⚠️ **注意**: APIキーなしでは全ての機能が動作しません。MCP設定で環境変数として設定します。
+⚠️ **Caution**: None of the features will work without an API key. Set it as an environment variable in the MCP configuration.
 
 ---
 
-### 🤖 Step 3: Claude Desktop MCP設定（5分）
+### 🤖 Step 3: Claude Desktop MCP Setup (5 min)
 
-#### 📍 設定ファイルの場所
+#### 📍 Configuration file location
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-#### 🛠️ 設定ファイル編集
+#### 🛠️ Edit configuration file
 
 ```json
 {
@@ -90,15 +90,15 @@ pip install -e .
 }
 ```
 
-> ⚠️ **重要**: 
-> - パスを環境に合わせて修正してください
-> - **`FINVIZ_API_KEY`にStep 2で取得したAPIキーを設定** - これが唯一必要な設定です
+⚠️ **Important**: 
+- Adjust the path to match your environment
+- **Set the API key obtained in Step 2 to `FINVIZ_API_KEY`** - This is the only required setting
 
-#### 🔄 Claude Desktop再起動
+#### 🔄 Restart Claude Desktop
 
-1. Claude Desktopを完全終了
-2. アプリケーションを再起動
-3. 新しいチャットで動作確認
+1. Completely exit Claude Desktop
+2. Restart the application
+3. Confirm operation in a new chat
 
 ---
 

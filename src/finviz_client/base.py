@@ -939,26 +939,25 @@ class FinvizClient:
         if 'earnings_date' in filters and filters['earnings_date']:
             earnings_date_value = filters['earnings_date']
             
-            # 日付範囲指定の場合（例：{"start": "2025-06-30", "end": "2025-07-04"}）
+            # If specifying a date range (e.g., {"start": "2025-06-30", "end": "2025-07-04"})
             if isinstance(earnings_date_value, dict) and 'start' in earnings_date_value and 'end' in earnings_date_value:
                 start_date = earnings_date_value['start']
                 end_date = earnings_date_value['end']
-                # Finviz形式: MM-DD-YYYYxMM-DD-YYYY
+                # Finviz format: MM-DD-YYYYxMM-DD-YYYY
                 start_formatted = self._format_date_for_finviz(start_date)
                 end_formatted = self._format_date_for_finviz(end_date)
                 if start_formatted and end_formatted:
                     params['f'] = params.get('f', '') + f'earningsdate_{start_formatted}x{end_formatted},'
             
-            # 直接の日付範囲文字列の場合（例：「06-30-2025x07-04-2025」）
+            # If a direct date range string is given (e.g., "06-30-2025x07-04-2025")
             elif isinstance(earnings_date_value, str) and 'x' in earnings_date_value:
                 params['f'] = params.get('f', '') + f'earningsdate_{earnings_date_value},'
             
-            # 従来の固定期間指定の場合
+            # For the conventional fixed period specification
             else:
-                # Finvizの特殊な仕様: 複数のearnings_date値を|で結合する場合、
-                # 最初の値だけearningsdate_プレフィックスが付き、残りは値のみ
+                # Special Finviz behavior: When combining multiple earnings_date values with |, only the first value gets the earningsdate_ prefix, the rest are just values
                 earnings_values = {
-                    # 内部形式 -> Finviz形式（プレフィックスなし）
+                    # Internal format -> Finviz format (no prefix)
                     'today': 'today',
                     'today_before': 'todaybefore',
                     'today_after': 'todayafter',
@@ -973,10 +972,10 @@ class FinvizClient:
                     'next_week': 'nextweek',
                     'prev_week': 'prevweek',
                     'this_month': 'thismonth',
-                    # サーバーから渡される値との互換性
+                    # Compatibility with values passed from the server
                     'nextweek': 'nextweek',
                     'within_2_weeks': 'nextdays5',
-                    # 直接Finviz形式の値もサポート
+                    # Also supports direct Finviz format values
                     'todaybefore': 'todaybefore',
                     'todayafter': 'todayafter',
                     'tomorrowbefore': 'tomorrowbefore',

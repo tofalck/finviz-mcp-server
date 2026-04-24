@@ -369,18 +369,18 @@ class FinvizCSVProcessor:
 **ファイル**: 複数ファイル
 **対象**: 日英混在の命名
 
-#### 問題
-- 一部のコメントとメソッド名で日本語が混在
-- 国際化への対応不足
+#### Issues
+- Some comments and method names contain Japanese
+- Insufficient support for internationalization
 
-#### 解決策
-- 英語での統一または多言語対応パターンの導入
-- ドキュメント文字列の国際化
+#### Solutions
+- Unify in English or introduce multilingual support patterns
+- Internationalize documentation strings
 
-#### タスク
-- [ ] 命名規則ガイドラインの策定
-- [ ] 段階的なリネーミング
-- [ ] 多言語サポートの検討
+#### Tasks
+- [ ] Establish naming convention guidelines
+- [ ] Gradual renaming
+- [ ] Consider multilingual support
 
 ---
 

@@ -1,140 +1,140 @@
 # Finviz MCP Server - Tools Reference
 
-## 🔍 スクリーニングツール
+## 🔍 Screening Tools
 
 ### `earnings_screener`
-決算発表予定銘柄の基本スクリーニング
+Basic screening for scheduled earnings announcement stocks
 
-**パラメータ:**
-- `earnings_date` (必須): 決算発表日 (`today_after`, `tomorrow_before`, `this_week`, `within_2_weeks`)
-- `market_cap`: 時価総額フィルタ (`small`, `mid`, `large`, `mega`)
-- `min_price`: 最低株価
-- `min_volume`: 最低出来高
-- `sectors`: 対象セクター
+**Parameters:**
+- `earnings_date` (required): Earnings announcement date (`today_after`, `tomorrow_before`, `this_week`, `within_2_weeks`)
+- `market_cap`: Market capitalization filter (`small`, `mid`, `large`, `mega`)
+- `min_price`: Minimum stock price
+- `min_volume`: Minimum trading volume
+- `sectors`: Target sectors
 
 ### `volume_surge_screener`
-出来高急増を伴う上昇銘柄のスクリーニング
+Screening for stocks with surging volume and price increase
 
-**パラメータ:**
-- `market_cap`: 時価総額フィルタ (デフォルト: `smallover`)
-- `min_price`: 最低株価 (デフォルト: 10)
-- `min_relative_volume`: 最低相対出来高倍率 (デフォルト: 1.5)
-- `min_price_change`: 最低価格変動率 (デフォルト: 2.0%)
-- `sma_filter`: 移動平均線フィルタ (デフォルト: `above_sma200`)
+**Parameters:**
+- `market_cap`: Market capitalization filter (default: `smallover`)
+- `min_price`: Minimum stock price (default: 10)
+- `min_relative_volume`: Minimum relative volume ratio (default: 1.5)
+- `min_price_change`: Minimum price change rate (default: 2.0%)
+- `sma_filter`: Moving average filter (default: `above_sma200`)
 
 ### `trend_reversion_screener`
-トレンド反転候補銘柄のスクリーニング
+Screening for trend reversal candidate stocks
 
-**パラメータ:**
-- `market_cap`: 時価総額フィルタ (デフォルト: `mid_large`)
-- `eps_growth_qoq`: EPS成長率(QoQ)最低値
-- `revenue_growth_qoq`: 売上成長率(QoQ)最低値
-- `rsi_max`: RSI上限値
-- `sectors`, `exclude_sectors`: セクターフィルタ
+**Parameters:**
+- `market_cap`: Market capitalization filter (default: `mid_large`)
+- `eps_growth_qoq`: Minimum EPS growth rate (QoQ)
+- `revenue_growth_qoq`: Minimum revenue growth rate (QoQ)
+- `rsi_max`: Maximum RSI value
+- `sectors`, `exclude_sectors`: Sector filter
 
 ### `uptrend_screener`
-上昇トレンド銘柄のスクリーニング
+Screening for uptrend stocks
 
-**パラメータ:**
-- `trend_type`: トレンドタイプ (`strong_uptrend`, `breakout`, `momentum`)
-- `sma_period`: 移動平均期間 (`20`, `50`, `200`)
+**Parameters:**
+- `trend_type`: Trend type (`strong_uptrend`, `breakout`, `momentum`)
+- `sma_period`: Moving average period (`20`, `50`, `200`)
 - `relative_volume`: 相対出来高最低値
 - `price_change`: 価格変化率最低値
 
 ### `dividend_growth_screener`
-配当成長銘柄のスクリーニング
+Screening for dividend growth stocks
 
-**パラメータ:**
-- `min_dividend_yield`, `max_dividend_yield`: 配当利回り範囲
-- `min_dividend_growth`: 最低配当成長率
-- `min_roe`: 最低ROE
-- `max_debt_equity`: 最高負債比率
+**Parameters:**
+- `min_dividend_yield`, `max_dividend_yield`: Dividend yield range
+- `min_dividend_growth`: Minimum dividend growth rate
+- `min_roe`: Minimum ROE
+- `max_debt_equity`: Maximum debt-to-equity ratio
 
 ### `etf_screener`
-ETF戦略用スクリーニング
+ETF strategy screening
 
-**パラメータ:**
-- `strategy_type`: 戦略タイプ (`long`, `short`)
-- `asset_class`: 資産クラス (`equity`, `bond`, `commodity`, `currency`)
-- `min_aum`: 最低運用資産額
-- `max_expense_ratio`: 最高経費率
+**Parameters:**
+- `strategy_type`: Strategy type (`long`, `short`)
+- `asset_class`: Asset class (`equity`, `bond`, `commodity`, `currency`)
+- `min_aum`: Minimum assets under management
+- `max_expense_ratio`: Maximum expense ratio
 
-## 📈 決算関連スクリーニング
+## 📈 Earnings-related Screening
 
 ### `earnings_premarket_screener`
-寄り付き前決算発表で上昇している銘柄
+Stocks rising after pre-market earnings announcements
 
-**パラメータ:**
-- `earnings_timing`: 決算発表タイミング (デフォルト: `today_before`)
-- `min_price_change`: 最低価格変動率 (デフォルト: 2.0%)
-- `include_premarket_data`: 寄り付き前取引データを含める
-- `max_results`: 最大取得件数 (デフォルト: 60)
+**Parameters:**
+- `earnings_timing`: Earnings announcement timing (default: `today_before`)
+- `min_price_change`: Minimum price change rate (default: 2.0%)
+- `include_premarket_data`: Include pre-market trading data
+- `max_results`: Maximum results (default: 60)
 
 ### `earnings_afterhours_screener`
-引け後決算発表で時間外取引上昇銘柄
+Stocks rising after after-hours earnings announcements
 
-**パラメータ:**
-- `earnings_timing`: 決算発表タイミング (デフォルト: `today_after`)
-- `min_afterhours_change`: 最低時間外価格変動率 (デフォルト: 2.0%)
-- `include_afterhours_data`: 時間外取引データを含める
-- `max_results`: 最大取得件数 (デフォルト: 60)
+**Parameters:**
+- `earnings_timing`: Earnings announcement timing (default: `today_after`)
+- `min_afterhours_change`: Minimum after-hours price change rate (default: 2.0%)
+- `include_afterhours_data`: Include after-hours trading data
+- `max_results`: Maximum results (default: 60)
 
 ### `earnings_trading_screener`
-決算トレード対象銘柄（予想上方修正・サプライズ重視）
+Earnings trading target stocks (focus on upward revisions and surprises)
 
-**パラメータ:**
-- `earnings_window`: 決算発表期間 (デフォルト: `yesterday_after_today_before`)
-- `earnings_revision`: 決算予想修正フィルタ (デフォルト: `eps_revenue_positive`)
-- `price_trend`: 価格トレンドフィルタ (デフォルト: `positive_change`)
-- `sort_by`: ソート基準 (デフォルト: `eps_surprise`)
+**Parameters:**
+- `earnings_window`: Earnings announcement window (default: `yesterday_after_today_before`)
+- `earnings_revision`: Earnings forecast revision filter (default: `eps_revenue_positive`)
+- `price_trend`: Price trend filter (default: `positive_change`)
+- `sort_by`: Sort key (default: `eps_surprise`)
 
 ### `earnings_winners_screener`
-決算勝ち組銘柄のスクリーニング（週間パフォーマンス・EPSサプライズ・売上サプライズを含む詳細一覧）
+Screening for earnings winners (detailed list including weekly performance, EPS surprise, sales surprise)
 
-**パラメータ:**
-- `earnings_period`: 決算発表期間 (デフォルト: `this_week`)
-- `market_cap`: 時価総額フィルタ (デフォルト: `smallover`)
-- `min_price`: 最低株価 (デフォルト: $10)
-- `min_avg_volume`: 最低平均出来高 (デフォルト: o500 = 500,000以上)
-- `min_eps_growth_qoq`: 最低EPS前四半期比成長率(%) (デフォルト: 10%)
-- `min_eps_revision`: 最低EPS予想改訂率(%) (デフォルト: 5%)
-- `min_sales_growth_qoq`: 最低売上前四半期比成長率(%) (デフォルト: 5%)
-- `min_weekly_performance`: 週次パフォーマンスフィルタ (デフォルト: 5to-1w)
-- `sma200_filter`: 200日移動平均線上のフィルタ (デフォルト: True)
-- `target_sectors`: 対象セクター (デフォルト: 主要6セクター)
-- `max_results`: 最大取得件数 (デフォルト: 50)
-- `sort_by`: ソート基準 (`performance_1w`, `eps_growth_qoq`, `eps_surprise`, `price_change`, `volume`)
-- `sort_order`: ソート順序 (`asc`, `desc`)
+**Parameters:**
+- `earnings_period`: Earnings announcement period (default: `this_week`)
+- `market_cap`: Market capitalization filter (default: `smallover`)
+- `min_price`: Minimum stock price (default: $10)
+- `min_avg_volume`: Minimum average volume (default: o500 = 500,000 or more)
+- `min_eps_growth_qoq`: Minimum EPS growth rate QoQ (%) (default: 10%)
+- `min_eps_revision`: Minimum EPS forecast revision rate (%) (default: 5%)
+- `min_sales_growth_qoq`: Minimum sales growth rate QoQ (%) (default: 5%)
+- `min_weekly_performance`: Weekly performance filter (default: 5to-1w)
+- `sma200_filter`: Above 200-day moving average filter (default: True)
+- `target_sectors`: Target sectors (default: 6 major sectors)
+- `max_results`: Maximum results (default: 50)
+- `sort_by`: Sort key (`performance_1w`, `eps_growth_qoq`, `eps_surprise`, `price_change`, `volume`)
+- `sort_order`: Sort order (`asc`, `desc`)
 
 ### `upcoming_earnings_screener`
-来週決算予定銘柄のスクリーニング（決算トレンド事前準備用）
+Screening for next week's scheduled earnings stocks (for pre-earnings trend preparation)
 
-**パラメータ:**
-- `earnings_period`: 決算発表期間 (デフォルト: `next_week`)
-- `market_cap`: 時価総額フィルタ (デフォルト: `smallover`)
-- `min_price`: 最低株価 (デフォルト: $10)
-- `min_avg_volume`: 最低平均出来高 (デフォルト: 500,000)
-- `target_sectors`: 対象セクター（8セクター）
-- `max_results`: 最大取得件数 (デフォルト: 100)
-- `sort_by`: ソート基準 (`earnings_date`, `market_cap`, `target_price_upside`, `volatility`)
-- `include_chart_view`: 週足チャートビューを含める (デフォルト: True)
-- `earnings_calendar_format`: 決算カレンダー形式で出力 (デフォルト: False)
+**Parameters:**
+- `earnings_period`: Earnings announcement period (default: `next_week`)
+- `market_cap`: Market capitalization filter (default: `smallover`)
+- `min_price`: Minimum stock price (default: $10)
+- `min_avg_volume`: Minimum average volume (default: 500,000)
+- `target_sectors`: Target sectors (8 sectors)
+- `max_results`: Maximum results (default: 100)
+- `sort_by`: Sort key (`earnings_date`, `market_cap`, `target_price_upside`, `volatility`)
+- `include_chart_view`: Include weekly chart view (default: True)
+- `earnings_calendar_format`: Output in earnings calendar format (default: False)
 
-## 📊 ファンダメンタル分析
+## 📊 Fundamental Analysis
 
 ### `get_stock_fundamentals`
-個別銘柄のファンダメンタルデータ取得
+Get fundamental data for individual stocks
 
-**パラメータ:**
-- `ticker` (必須): 銘柄ティッカー
-- `data_fields`: 取得データフィールドのリスト
+**Parameters:**
+- `ticker` (required): Stock ticker
+- `data_fields`: List of data fields to retrieve
 
 ### `get_multiple_stocks_fundamentals`
-複数銘柄のファンダメンタルデータ一括取得
+Batch retrieve fundamental data for multiple stocks
 
-**パラメータ:**
-- `tickers` (必須): 銘柄ティッカーのリスト
-- `data_fields`: 取得データフィールドのリスト
+**Parameters:**
+- `tickers` (required): List of stock tickers
+- `data_fields`: List of data fields to retrieve
 
 ## 📄 SECファイリング分析
 
