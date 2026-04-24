@@ -1,4 +1,4 @@
-import pandas as pd
+﻿import pandas as pd
 import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
@@ -10,7 +10,7 @@ from ..models import SECFilingData
 logger = logging.getLogger(__name__)
 
 class FinvizSECFilingsClient(FinvizClient):
-    """Finviz SECファイリングデータクライアント"""
+    """Finviz SEC filings data client."""
     
     SEC_FILINGS_EXPORT_URL = f"{FinvizClient.BASE_URL}/export/latest-filings"
     
@@ -24,33 +24,33 @@ class FinvizSECFilingsClient(FinvizClient):
         sort_order: str = "desc"
     ) -> List[SECFilingData]:
         """
-        指定銘柄のSECファイリングデータを取得
+        Fetch SEC filings data for the specified stock.
         
         Args:
-            ticker: 銘柄ティッカー
-            form_types: フォームタイプフィルタ (例: ["10-K", "10-Q", "8-K"])
-            days_back: 過去何日分のファイリング
-            max_results: 最大取得件数
-            sort_by: ソート基準 ("filing_date", "report_date", "form")
-            sort_order: ソート順序 ("asc", "desc")
+            ticker: Stock ticker
+            form_types: Form type filter (e.g. ["10-K", "10-Q", "8-K"])
+            days_back: Number of days back to fetch filings
+            max_results: Maximum number of results
+            sort_by: Sort criteria ("filing_date", "report_date", "form")
+            sort_order: Sort order ("asc", "desc")
             
         Returns:
-            SECFilingData オブジェクトのリスト
+            SECFList of SECFilingData objects
         """
         try:
-            # パラメータの構築
-            # sort_byがfiling_dateの場合は、Finvizの正しいパラメータ名に変換
+            # Build parameters
+            # Convert sort_by to Finviz parameter name when filing_date
             finviz_sort_param = "filingDate" if sort_by == "filing_date" else sort_by
             params = {
                 't': ticker,
                 'o': f"-{finviz_sort_param}" if sort_order == "desc" else finviz_sort_param
             }
             
-            # APIキーを追加（テスト用キーをデフォルトとして使用）
+            # Add API key (use test key as default)
             if self.api_key:
                 params['auth'] = self.api_key
             else:
-                # 環境変数からAPIキーを取得
+                # Get API key from environment variable
                 import os
                 env_api_key = os.getenv('FINVIZ_API_KEY')
                 if env_api_key:
@@ -59,24 +59,24 @@ class FinvizSECFilingsClient(FinvizClient):
                     logger.error("No Finviz API key provided. Please set FINVIZ_API_KEY environment variable.")
                     raise ValueError("Finviz API key is required")
             
-            # CSVデータを取得
+            # Fetch CSV data
             response = self._make_request(self.SEC_FILINGS_EXPORT_URL, params)
             
-            # CSVデータをパース
+            # Parse CSV data
             filings_data = self._parse_sec_filings_csv(response.text, ticker)
             
-            # フィルタリング
+            # Filtering
             if form_types:
                 filings_data = [f for f in filings_data if f.form in form_types]
             
-            # 日付フィルタリング
+            # Date filtering
             cutoff_date = datetime.now() - timedelta(days=days_back)
             filings_data = [
                 f for f in filings_data 
                 if self._parse_date(f.filing_date) >= cutoff_date
             ]
             
-            # 最大件数制限
+            # Max result limit
             if max_results and max_results > 0:
                 filings_data = filings_data[:max_results]
             
@@ -94,20 +94,20 @@ class FinvizSECFilingsClient(FinvizClient):
         limit: int = 10
     ) -> List[SECFilingData]:
         """
-        特定のフォームタイプの最新ファイリングを取得
+        Fetch latest filings for specific form type.
         
         Args:
-            ticker: 銘柄ティッカー
-            form_type: フォームタイプ (例: "10-K", "10-Q", "8-K")
-            limit: 最大取得件数
+            ticker: Stock ticker
+            form_type: Form type (e.g. "10-K", "10-Q", "8-K")
+            limit: Maximum number of items to retrieve
             
         Returns:
-            SECFilingData オブジェクトのリスト
+            SECFList of SECFilingData objects
         """
         return self.get_sec_filings(
             ticker=ticker,
             form_types=[form_type],
-            days_back=365,  # 1年分
+            days_back=365,  # 1 year
             max_results=limit,
             sort_by="filing_date",
             sort_order="desc"
@@ -119,14 +119,14 @@ class FinvizSECFilingsClient(FinvizClient):
         days_back: int = 90
     ) -> List[SECFilingData]:
         """
-        主要フォーム（10-K, 10-Q, 8-K）のファイリングを取得
+        Fetch major form (10-K, 10-Q, 8-K) filings.
         
         Args:
-            ticker: 銘柄ティッカー
-            days_back: 過去何日分
+            ticker: Stock ticker
+            days_back: Number of days back
             
         Returns:
-            SECFilingData オブジェクトのリスト
+            SECFList of SECFilingData objects
         """
         major_forms = ["10-K", "10-Q", "8-K", "DEF 14A", "SC 13G", "SC 13D"]
         return self.get_sec_filings(
@@ -144,14 +144,14 @@ class FinvizSECFilingsClient(FinvizClient):
         days_back: int = 30
     ) -> List[SECFilingData]:
         """
-        インサイダー取引関連のファイリング（フォーム4等）を取得
+        Fetch insider trading filings (Form 4, etc.).
         
         Args:
-            ticker: 銘柄ティッカー
-            days_back: 過去何日分
+            ticker: Stock ticker
+            days_back: Number of days back
             
         Returns:
-            SECFilingData オブジェクトのリスト
+            SECFList of SECFilingData objects
         """
         insider_forms = ["3", "4", "5", "11-K"]
         return self.get_sec_filings(
@@ -165,25 +165,25 @@ class FinvizSECFilingsClient(FinvizClient):
     
     def _parse_sec_filings_csv(self, csv_text: str, ticker: str) -> List[SECFilingData]:
         """
-        CSV形式のSECファイリングデータをパースしてSECFilingDataオブジェクトのリストに変換
+        CSVParse CSV format SEC filings data into a list of SECFilingData objects.
         
         Args:
-            csv_text: CSV形式のテキスト
-            ticker: 銘柄ティッカー
+            csv_text: CSV format text
+            ticker: Stock ticker
             
         Returns:
-            SECFilingData オブジェクトのリスト
+            SECFList of SECFilingData objects
         """
         try:
-            # CSVテキストをDataFrameに変換（エラー処理を強化）
+            # Convert CSV text to DataFrame (enhanced error handling)
             from io import StringIO
             
-            # CSVパラメータを調整してエラーを回避
+            # Adjust CSV parameters to avoid errors
             df = pd.read_csv(
                 StringIO(csv_text),
-                on_bad_lines='skip',  # 不正な行をスキップ
-                dtype=str,  # 全てを文字列として読み込み
-                na_filter=False  # NAフィルタを無効化
+                on_bad_lines='skip',  # Skip malformed rows
+                dtype=str,  # Read all as strings
+                na_filter=False  # Disable NA filter
             )
             
             logger.info(f"Successfully parsed CSV with {len(df)} rows")
@@ -191,7 +191,7 @@ class FinvizSECFilingsClient(FinvizClient):
             filings = []
             for idx, row in df.iterrows():
                 try:
-                    # 安全にデータを取得（デフォルト値を設定）
+                    # Safely fetch data (set default values)
                     filing_date = str(row.get('Filing Date', '')).strip()
                     report_date = str(row.get('Report Date', '')).strip()
                     form = str(row.get('Form', '')).strip()
@@ -199,7 +199,7 @@ class FinvizSECFilingsClient(FinvizClient):
                     filing_url = str(row.get('Filing', '')).strip()
                     document_url = str(row.get('Document', '')).strip()
                     
-                    # 必須フィールドの検証
+                    # Validate required fields
                     if not filing_date or not form:
                         logger.warning(f"Skipping row {idx}: missing required fields")
                         continue
@@ -224,30 +224,30 @@ class FinvizSECFilingsClient(FinvizClient):
             
         except Exception as e:
             logger.error(f"Error parsing SEC filings CSV: {e}")
-            # デバッグ用にCSVテキストの最初の部分をログ出力
+            # Log CSV text preview for debugging
             csv_preview = csv_text[:500] if csv_text else "Empty CSV"
             logger.debug(f"CSV preview: {csv_preview}")
             return []
     
     def _parse_date(self, date_str: str) -> datetime:
         """
-        日付文字列をdatetimeオブジェクトに変換
+        Convert date string to datetime object.
         
         Args:
-            date_str: 日付文字列
+            date_str: Date string
             
         Returns:
-            datetime オブジェクト
+            datetime object
         """
         try:
-            # MM/DD/YY形式を想定
+            # Assume MM/DD/YY format
             return datetime.strptime(date_str, '%m/%d/%y')
         except ValueError:
             try:
-                # YYYY-MM-DD形式も試す
+                # Also try YYYY-MM-DD format
                 return datetime.strptime(date_str, '%Y-%m-%d')
             except ValueError:
-                # パースできない場合は現在日時を返す
+                # Return current datetime if unparseable
                 logger.warning(f"Could not parse date: {date_str}")
                 return datetime.now()
     
@@ -257,14 +257,14 @@ class FinvizSECFilingsClient(FinvizClient):
         days_back: int = 90
     ) -> Dict[str, Any]:
         """
-        指定期間のファイリング概要を取得
+        Get filings summary for the specified period.
         
         Args:
-            ticker: 銘柄ティッカー
-            days_back: 過去何日分
+            ticker: Stock ticker
+            days_back: Number of days back
             
         Returns:
-            ファイリング概要の辞書
+            Filing summary dictionary
         """
         try:
             filings = self.get_sec_filings(
@@ -278,7 +278,7 @@ class FinvizSECFilingsClient(FinvizClient):
             if not filings:
                 return {"ticker": ticker, "total_filings": 0, "forms": {}}
             
-            # フォームタイプ別集計
+            # Aggregate by form type
             form_counts = {}
             for filing in filings:
                 form_type = filing.form
@@ -286,7 +286,7 @@ class FinvizSECFilingsClient(FinvizClient):
                     form_counts[form_type] = 0
                 form_counts[form_type] += 1
             
-            # 最新ファイリング日
+            # Latest filing date
             latest_filing = max(filings, key=lambda x: self._parse_date(x.filing_date))
             
             summary = {

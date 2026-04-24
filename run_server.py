@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Convenient entry point to run the Finviz MCP Server
 """
@@ -10,7 +10,7 @@ import os
 # Add project root to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
-# 追加していた src パス設定を削除し、元の状態に復元
+# Removed the previously added src path setting and restored the original state
 
 from src.server import cli_main
 

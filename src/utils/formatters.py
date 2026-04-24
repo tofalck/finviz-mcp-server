@@ -1,26 +1,26 @@
-from typing import List, Dict, Any, Optional
+﻿from typing import List, Dict, Any, Optional
 from ..models import StockData, SectorPerformance, NewsData
 
 def format_stock_data_table(stocks: List[StockData], fields: Optional[List[str]] = None) -> str:
     """
-    株式データをテーブル形式でフォーマット
+    Format stock data as a table.
     
     Args:
-        stocks: 株式データのリスト
-        fields: 表示するフィールドのリスト
+        stocks: List of stock data
+        fields: List of fields to display
         
     Returns:
-        フォーマットされたテーブル文字列
+        Formatted table string
     """
     if not stocks:
         return "No stocks found."
     
-    # デフォルトフィールド
+    # Default fields
     if fields is None:
         fields = ['ticker', 'company_name', 'sector', 'price', 'price_change', 
                  'volume', 'market_cap']
     
-    # ヘッダー行
+    # Header row
     header_mapping = {
         'ticker': 'Ticker',
         'company_name': 'Company',
@@ -38,7 +38,7 @@ def format_stock_data_table(stocks: List[StockData], fields: Optional[List[str]]
     
     headers = [header_mapping.get(field, field.title()) for field in fields]
     
-    # データ行
+    # Data rows
     rows = []
     for stock in stocks:
         row = []
@@ -48,18 +48,18 @@ def format_stock_data_table(stocks: List[StockData], fields: Optional[List[str]]
             row.append(formatted_value)
         rows.append(row)
     
-    # テーブル作成
+    # Create table
     return create_ascii_table(headers, rows)
 
 def format_large_number(num: float) -> str:
     """
-    大きな数値を読みやすい形式でフォーマット
+    Format a large number in a readable form.
     
     Args:
-        num: 数値
+        num: Number
         
     Returns:
-        フォーマットされた文字列
+        Formatted string
     """
     if num >= 1e9:
         return f"{num/1e9:.2f}B"
@@ -72,77 +72,77 @@ def format_large_number(num: float) -> str:
 
 def format_field_value(field: str, value: Any) -> str:
     """
-    フィールド値をフォーマット
+    Format a field value.
     
     Args:
-        field: フィールド名
-        value: 値
+        field: Field name
+        value: Value
         
     Returns:
-        フォーマットされた文字列
+        Formatted string
     """
     if value is None:
         return "N/A"
     
-    # 価格フィールド
+    # Price fields
     if field in ['price', 'target_price', 'week_52_high', 'week_52_low']:
         return f"${value:.2f}" if isinstance(value, (int, float)) else str(value)
     
-    # パーセンテージフィールド
+    # Percentage fields
     if field in ['price_change', 'dividend_yield', 'performance_1w', 'performance_1m', 
                 'eps_surprise', 'revenue_surprise']:
         return f"{value:.2f}%" if isinstance(value, (int, float)) else str(value)
     
-    # 出来高フィールド
+    # Volume fields
     if field in ['volume', 'avg_volume']:
         return format_large_number(value) if isinstance(value, (int, float)) else str(value)
     
-    # 倍率フィールド
+    # Multiplier fields
     if field in ['relative_volume', 'pe_ratio', 'beta']:
         return f"{value:.2f}x" if isinstance(value, (int, float)) else str(value)
     
-    # そのまま表示
+    # Display as-is
     return str(value)
 
 def create_ascii_table(headers: List[str], rows: List[List[str]]) -> str:
     """
-    ASCII テーブルを作成
+    Create an ASCII table.
     
     Args:
-        headers: ヘッダーのリスト
-        rows: データ行のリスト
+        headers: List of headers
+        rows: List of data rows
         
     Returns:
-        ASCII テーブル文字列
+        ASCII table string
     """
     if not headers or not rows:
         return ""
     
-    # 各列の最大幅を計算
+    # Calculate max width for each column
     col_widths = []
     for i, header in enumerate(headers):
         max_width = len(header)
         for row in rows:
             if i < len(row):
                 max_width = max(max_width, len(str(row[i])))
-        col_widths.append(min(max_width, 20))  # 最大20文字に制限
+        col_widths.append(min(max_width, 20))  # Cap at 20 characters
     
-    # ヘッダー行
+    # Header row
     header_line = "| " + " | ".join(header.ljust(col_widths[i]) for i, header in enumerate(headers)) + " |"
     separator_line = "+" + "+".join("-" * (col_widths[i] + 2) for i in range(len(headers))) + "+"
     
-    # データ行
+    # Data rows
     data_lines = []
     for row in rows:
         padded_row = []
         for i, cell in enumerate(row):
             if i < len(col_widths):
-                cell_str = str(cell)[:col_widths[i]]  # 幅制限
+                cell_str = str(cell)[:col_widths[i]]  # Width limit
                 padded_row.append(cell_str.ljust(col_widths[i]))
         data_line = "| " + " | ".join(padded_row) + " |"
         data_lines.append(data_line)
     
-    # テーブル組み立て
+    # Assemble table
     table_lines = [
         separator_line,
         header_line,
@@ -155,13 +155,13 @@ def create_ascii_table(headers: List[str], rows: List[List[str]]) -> str:
 
 def format_earnings_summary(stocks: List[StockData]) -> str:
     """
-    決算銘柄のサマリーをフォーマット
+    Format an earnings summary.
     
     Args:
-        stocks: 株式データのリスト
+        stocks: List of stock data
         
     Returns:
-        フォーマットされたサマリー
+        Formatted summary
     """
     if not stocks:
         return "No earnings data found."
@@ -172,24 +172,24 @@ def format_earnings_summary(stocks: List[StockData]) -> str:
         ""
     ]
     
-    # セクター別集計
+    # Count by sector
     sector_counts = {}
     positive_surprises = 0
     negative_surprises = 0
     
     for stock in stocks:
-        # セクター集計
+        # Sector aggregation
         sector = stock.sector or "Unknown"
         sector_counts[sector] = sector_counts.get(sector, 0) + 1
         
-        # サプライズ集計
+        # Surprise aggregation
         if stock.eps_surprise:
             if stock.eps_surprise > 0:
                 positive_surprises += 1
             else:
                 negative_surprises += 1
     
-    # セクター別結果
+    # Sector breakdown
     summary_lines.append("Sector Breakdown:")
     for sector, count in sorted(sector_counts.items(), key=lambda x: x[1], reverse=True):
         summary_lines.append(f"  {sector}: {count} stocks")
@@ -206,13 +206,13 @@ def format_earnings_summary(stocks: List[StockData]) -> str:
 
 def format_sector_performance(sectors: List[SectorPerformance]) -> str:
     """
-    セクターパフォーマンスをフォーマット
+    Format sector performance data.
     
     Args:
-        sectors: セクターパフォーマンスのリスト
+        sectors: List of sector performance data
         
     Returns:
-        フォーマットされた文字列
+        Formatted string
     """
     if not sectors:
         return "No sector performance data found."
@@ -237,13 +237,13 @@ def format_sector_performance(sectors: List[SectorPerformance]) -> str:
 
 def format_news_summary(news_list: List[NewsData]) -> str:
     """
-    ニュースデータをフォーマット
+    Format news data.
     
     Args:
-        news_list: ニュースデータのリスト
+        news_list: List of news data
         
     Returns:
-        フォーマットされた文字列
+        Formatted string
     """
     if not news_list:
         return "No news found."
@@ -254,7 +254,7 @@ def format_news_summary(news_list: List[NewsData]) -> str:
         ""
     ]
     
-    for news in news_list[:10]:  # 最新10件のみ表示
+    for news in news_list[:10]:  # Show only latest 10 items
         summary_lines.extend([
             f"[{news.category}] {news.title}",
             f"Source: {news.source} | Date: {news.date.strftime('%Y-%m-%d %H:%M')}",
@@ -267,14 +267,14 @@ def format_news_summary(news_list: List[NewsData]) -> str:
 
 def format_screening_result_summary(stocks: List[StockData], params: Dict[str, Any]) -> str:
     """
-    スクリーニング結果のサマリーをフォーマット
+    Format a screening result summary.
     
     Args:
-        stocks: 株式データのリスト
-        params: スクリーニングパラメータ
+        stocks: List of stock data
+        params: Screening parameters
         
     Returns:
-        フォーマットされたサマリー
+        Formatted summary
     """
     summary_lines = [
         f"Screening Results Summary:",
@@ -283,7 +283,7 @@ def format_screening_result_summary(stocks: List[StockData], params: Dict[str, A
         ""
     ]
     
-    # パラメータ表示
+    # Display parameters
     summary_lines.append("Search Criteria:")
     for key, value in params.items():
         if value is not None:
@@ -292,7 +292,7 @@ def format_screening_result_summary(stocks: List[StockData], params: Dict[str, A
     summary_lines.append("")
     
     if stocks:
-        # 統計情報
+        # Statistics
         prices = [s.price for s in stocks if s.price is not None]
         changes = [s.price_change for s in stocks if s.price_change is not None]
         volumes = [s.volume for s in stocks if s.volume is not None]

@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from typing import List, Optional, Dict, Any
 import pandas as pd
 import os
@@ -9,7 +9,7 @@ from ..models import SectorPerformance
 logger = logging.getLogger(__name__)
 
 class FinvizSectorAnalysisClient(FinvizClient):
-    """Finvizセクター・業界分析専用クライアント"""
+    """Dedicated client for Finviz sector and industry analysis."""
     
     def __init__(self, api_key: Optional[str] = None):
         super().__init__(api_key)
@@ -17,27 +17,27 @@ class FinvizSectorAnalysisClient(FinvizClient):
     def get_sector_performance(self, timeframe: str = "1d", 
                              sectors: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
-        セクター別パフォーマンス分析（CSV export使用）
+        Sector performance analysis (using CSV export).
         
         Args:
-            timeframe: 分析期間 (1d, 1w, 1m, 3m, 6m, 1y) - 現在は無視される
-            sectors: 対象セクター（Noneの場合は全セクター）
+            timeframe: Analysis period (1d, 1w, 1m, 3m, 6m, 1y) - currently ignored
+            sectors: Target sectors (None = all sectors)
             
         Returns:
-            SectorPerformance オブジェクトのリスト
+            List of SectorPerformance objects
         """
         try:
-            # 基本的なセクターデータを取得（v=152パラメーター追加）
+            # Fetch basic sector data (adding v=152 parameter)
             params = {
                 'g': 'sector',
-                'v': '152'  # 正しいビューフォーマット
+                'v': '152'  # Correct view format
             }
             
-            # APIキーを追加（base.pyと同様の処理）
+            # API key (same handling as base.py)
             if self.api_key:
                 params['auth'] = self.api_key
             else:
-                # 環境変数からAPIキーを取得
+                # Get API key from environment variable
                 env_api_key = os.getenv('FINVIZ_API_KEY')
                 if env_api_key:
                     params['auth'] = env_api_key
@@ -45,14 +45,14 @@ class FinvizSectorAnalysisClient(FinvizClient):
                     logger.error("No Finviz API key provided. Please set FINVIZ_API_KEY environment variable.")
                     raise ValueError("Finviz API key is required")
             
-            # CSVからセクターパフォーマンスデータを取得
+            # Fetch sector performance data from CSV
             df = self._fetch_csv_from_url(self.GROUPS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning("No sector performance data returned")
                 return []
             
-            # CSVデータからSectorPerformanceオブジェクトのリストに変換
+            # Convert CSV data to list of SectorPerformance objects
             sector_data = []
             for _, row in df.iterrows():
                 try:
@@ -63,7 +63,7 @@ class FinvizSectorAnalysisClient(FinvizClient):
                     logger.warning(f"Failed to parse sector performance from CSV: {e}")
                     continue
             
-            # セクターフィルタリング
+            # Sector filtering
             if sectors:
                 sector_data = [s for s in sector_data if s.get('name') in sectors]
             
@@ -76,30 +76,30 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def get_industry_performance(self, industries: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
-        業界別パフォーマンス分析（CSV export使用）
+        Industry performance analysis (using CSV export).
         
         Args:
-            industries: 対象業界（Noneの場合は全業界）
+            industries: Target industries (None = all industries)
             
         Returns:
-            業界パフォーマンスデータのリスト
+            List of industry performance data
         """
         try:
             params = {
                 'g': 'industry',
-                'v': '152',  # 固定値
-                'o': 'name',  # ソート順序
-                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # 全カラム指定
+                'v': '152',  # Fixed value
+                'o': 'name',  # Sort order
+                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # All columns
             }
             
-            # CSVから業界パフォーマンスデータを取得
+            # Fetch industry performance data from CSV
             df = self._fetch_csv_from_url(self.GROUPS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning("No industry performance data returned")
                 return []
             
-            # CSVデータから業界パフォーマンスデータのリストに変換
+            # Convert CSV data to list of industry performance data
             industry_data = []
             for _, row in df.iterrows():
                 try:
@@ -110,7 +110,7 @@ class FinvizSectorAnalysisClient(FinvizClient):
                     logger.warning(f"Failed to parse industry performance from CSV: {e}")
                     continue
                     
-            # 業界フィルタリング
+            # Industry filtering
             if industries:
                 industry_data = [i for i in industry_data if i.get('industry') in industries]
             
@@ -123,30 +123,30 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def get_country_performance(self, countries: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
-        国別市場パフォーマンス分析（CSV export使用）
+        Country market performance analysis (using CSV export).
         
         Args:
-            countries: 対象国（Noneの場合は全国）
+            countries: Target countries (None = all)
             
         Returns:
-            国別パフォーマンスデータのリスト
+            List of country performance data
         """
         try:
             params = {
                 'g': 'country',
-                'v': '152',  # 固定値
-                'o': 'name',  # ソート順序
-                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # 全カラム指定
+                'v': '152',  # Fixed value
+                'o': 'name',  # Sort order
+                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # All columns
             }
             
-            # CSVから国別パフォーマンスデータを取得
+            # Fetch country performance data from CSV
             df = self._fetch_csv_from_url(self.GROUPS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning("No country performance data returned")
                 return []
             
-            # CSVデータから国別パフォーマンスデータのリストに変換
+            # Convert CSV data to list of country performance data
             country_data = []
             for _, row in df.iterrows():
                 try:
@@ -157,7 +157,7 @@ class FinvizSectorAnalysisClient(FinvizClient):
                     logger.warning(f"Failed to parse country performance from CSV: {e}")
                     continue
             
-            # 国フィルタリング
+            # Country filtering
             if countries:
                 country_data = [c for c in country_data if c.get('country') in countries]
             
@@ -170,16 +170,16 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def get_sector_specific_industry_performance(self, sector: str) -> List[Dict[str, Any]]:
         """
-        特定セクター内の業界別パフォーマンス分析
+        Industry performance analysis within a specific sector.
         
         Args:
-            sector: セクター名 (basicmaterials, communicationservices, consumercyclical, etc.)
+            sector: Sector name (basicmaterials, communicationservices, consumercyclical, etc.)
             
         Returns:
-            業界パフォーマンスデータのリスト
+            List of industry performance data
         """
         try:
-            # セクター名を正規化
+            # Normalize sector name
             sector_mapping = {
                 'basicmaterials': 'basicmaterials',
                 'basic_materials': 'basicmaterials',
@@ -204,25 +204,25 @@ class FinvizSectorAnalysisClient(FinvizClient):
             params = {
                 'g': 'industry',
                 'sg': sector_code,
-                'v': '152',  # 固定値
-                'o': 'name',  # ソート順序
-                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # 全カラム指定
+                'v': '152',  # Fixed value
+                'o': 'name',  # Sort order
+                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # All columns
             }
             
-            # CSVからセクター別業界パフォーマンスデータを取得
+            # Fetch sector-specific industry performance data from CSV
             df = self._fetch_csv_from_url(self.GROUPS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning(f"No industry performance data returned for sector {sector}")
                 return []
             
-            # CSVデータから業界パフォーマンスデータのリストに変換
+            # Convert CSV data to list of industry performance data
             industry_data = []
             for _, row in df.iterrows():
                 try:
                     industry_perf = self._parse_industry_performance_from_csv(row)
                     if industry_perf:
-                        # セクター情報を追加
+                        # Add sector info
                         industry_perf['parent_sector'] = sector
                         industry_data.append(industry_perf)
                 except Exception as e:
@@ -238,27 +238,27 @@ class FinvizSectorAnalysisClient(FinvizClient):
 
     def get_capitalization_performance(self) -> List[Dict[str, Any]]:
         """
-        時価総額別パフォーマンス分析
+        Market cap performance analysis.
         
         Returns:
-            時価総額別パフォーマンスデータのリスト
+            List of market cap performance data
         """
         try:
             params = {
                 'g': 'capitalization',
-                'v': '152',  # 固定値
-                'o': 'name',  # ソート順序
-                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # 全カラム指定
+                'v': '152',  # Fixed value
+                'o': 'name',  # Sort order
+                'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26'  # All columns
             }
             
-            # CSVから時価総額別パフォーマンスデータを取得
+            # Fetch market cap performance data from CSV
             df = self._fetch_csv_from_url(self.GROUPS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning("No capitalization performance data returned")
                 return []
             
-            # CSVデータから時価総額別パフォーマンスデータのリストに変換
+            # CSV data to list of market cap performance data
             cap_data = []
             for _, row in df.iterrows():
                 try:
@@ -280,13 +280,13 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def _parse_sector_performance_from_csv(self, row: 'pd.Series') -> Optional[Dict[str, Any]]:
         """
-        CSV行からセクターパフォーマンスデータを作成
+        Create sector performance data from CSV row.
         
         Args:
-            row: pandasのSeries（CSV行データ）
+            row: pandas Series (CSV row data)
             
         Returns:
-            セクターパフォーマンスデータ辞書またはNone
+            Sector performance data dict or None
         """
         try:
             import pandas as pd
@@ -310,13 +310,13 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def _parse_industry_performance_from_csv(self, row: 'pd.Series') -> Optional[Dict[str, Any]]:
         """
-        CSV行から業界パフォーマンスデータを作成
+        Create industry performance data from CSV row.
         
         Args:
-            row: pandasのSeries（CSV行データ）
+            row: pandas Series (CSV row data)
             
         Returns:
-            業界パフォーマンスデータ辞書またはNone
+            Industry performance data dict or None
         """
         try:
             import pandas as pd
@@ -342,13 +342,13 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def _parse_country_performance_from_csv(self, row: 'pd.Series') -> Optional[Dict[str, Any]]:
         """
-        CSV行から国別パフォーマンスデータを作成
+        Create country performance data from CSV row.
         
         Args:
-            row: pandasのSeries（CSV行データ）
+            row: pandas Series (CSV row data)
             
         Returns:
-            国別パフォーマンスデータ辞書またはNone
+            Country performance data dict or None
         """
         try:
             import pandas as pd
@@ -374,20 +374,20 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def _safe_parse_percentage(self, value) -> float:
         """
-        安全にパーセンテージを解析
+        Safely parse a percentage value.
         
         Args:
-            value: パーセンテージ値
+            value: Percentage value
             
         Returns:
-            float値
+            float value
         """
         if value is None or str(value) in ['-', 'N/A', 'nan', '']:
             return 0.0
         
         try:
             if isinstance(value, str):
-                # パーセント記号を削除して数値に変換
+                # Remove percent sign and convert to number
                 cleaned_value = value.replace('%', '').strip()
                 return float(cleaned_value)
             return float(value)
@@ -396,13 +396,13 @@ class FinvizSectorAnalysisClient(FinvizClient):
     
     def _parse_capitalization_performance_from_csv(self, row: 'pd.Series') -> Optional[Dict[str, Any]]:
         """
-        CSV行から時価総額別パフォーマンスデータを作成
+        CSCreate market cap performance data from CSV row.
         
         Args:
-            row: pandasのSeries（CSV行データ）
+            row: pandas Series (CSV row data)
             
         Returns:
-            時価総額別パフォーマンスデータ辞書またはNone
+            Market cap performance data dict or None
         """
         try:
             import pandas as pd
@@ -426,20 +426,20 @@ class FinvizSectorAnalysisClient(FinvizClient):
 
     def _safe_parse_number(self, value) -> int:
         """
-        安全に数値を解析
+        Safely parse a numeric value.
         
         Args:
-            value: 数値
+            value: Numeric value
             
         Returns:
-            int値
+            int value
         """
         if value is None or str(value) in ['-', 'N/A', 'nan', '']:
             return 0
         
         try:
             if isinstance(value, str):
-                # カンマを削除して数値に変換
+                # Remove commas and convert to number
                 cleaned_value = value.replace(',', '').strip()
                 return int(float(cleaned_value))
             return int(value)
