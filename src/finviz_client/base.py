@@ -23,6 +23,7 @@ class FinvizClient:
     GROUPS_EXPORT_URL = f"{BASE_URL}/grp_export.ashx"
     NEWS_EXPORT_URL = f"{BASE_URL}/news_export.ashx"
     QUOTE_EXPORT_URL = f"{BASE_URL}/quote_export.ashx"
+    QUOTE_URL = f"{BASE_URL}/quote.ashx"
     
     def __init__(self, api_key: Optional[str] = None):
         """
@@ -1123,7 +1124,8 @@ class FinvizClient:
             
             # Fetch CSV data
             logger.info(f"Finviz CSV export URL: {self.EXPORT_URL}")
-            logger.info(f"Finviz CSV export params: {finviz_params}")
+            redacted_params = {k: '***' if k == 'auth' else v for k, v in finviz_params.items()}
+            logger.info(f"Finviz CSV export params: {redacted_params}")
             response = self._make_request(self.EXPORT_URL, finviz_params)
             
             # Check whether response is CSV or HTML
@@ -1441,6 +1443,131 @@ class FinvizClient:
         
         return stock_data
     
+    def get_option_chain(
+        self,
+        ticker: str,
+        expiry_start_date: Optional[str] = None,
+        expiry_end_date: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Fetch the option chain for a ticker from the Finviz quote page.
+
+        Args:
+            ticker: Stock ticker symbol (e.g. "AAPL")
+            expiry_start_date: Start of expiry range in YYYY-MM-DD format
+                    (e.g. "2026-05-16"). All expiries on or after this date are
+                    fetched. If no such expiry exists, an empty options list is
+                    returned. If None, only Finviz's default (nearest) expiry is
+                    returned.
+            expiry_end_date: End of expiry range in YYYY-MM-DD format
+                    (inclusive). Expiries strictly after this date are excluded.
+                    Ignored when expiry_start_date is None.
+
+        Returns:
+            Dict with keys:
+                ticker, expiries_fetched (list of fetched expiry dates),
+                all_expiries (full list from Finviz), options (list of dicts,
+                both calls and puts, across all fetched expiries)
+        """
+        import json as _json
+        import re as _re
+
+        # Resolve API key — same mechanics as other client methods
+        api_key = self.api_key
+        if not api_key:
+            import os as _os
+            api_key = _os.getenv('FINVIZ_API_KEY')
+        if not api_key:
+            logger.warning("No Finviz API key found - option chain data may be unavailable")
+
+        ticker = ticker.upper()
+
+        def _fetch(expiry_date: Optional[str] = None) -> Dict[str, Any]:
+            params: Dict[str, Any] = {
+                "t": ticker, "ta": "1", "p": "d", "ty": "oc", "auth": api_key
+            }
+            if expiry_date:
+                params["e"] = expiry_date
+            response = self._make_request(self.QUOTE_URL, params)
+            html = response.text
+            match = _re.search(
+                r'<script\s+id=["\']route-init-data["\'][^>]*>\s*(\{.*?\})\s*</script>',
+                html,
+                _re.DOTALL,
+            )
+            if not match:
+                raise ValueError(
+                    f"option chain data not found in Finviz response for {ticker}"
+                )
+            return _json.loads(match.group(1))
+
+        def _norm(o: Dict[str, Any]) -> Dict[str, Any]:
+            return {
+                "type": o.get("type"),
+                "strike": o.get("strike"),
+                "expiry": str(o.get("exDate", "")),
+                "bid": o.get("bidPrice"),
+                "ask": o.get("askPrice"),
+                "last": o.get("lastClose"),
+                "last_change": o.get("lastChange"),
+                "volume": o.get("lastVolume"),
+                "open_interest": o.get("openInterest"),
+                "avg_volume": o.get("averageVolume"),
+                "iv": o.get("iv"),
+                "delta": o.get("delta"),
+                "gamma": o.get("gamma"),
+                "theta": o.get("theta"),
+                "vega": o.get("vega"),
+                "rho": o.get("rho"),
+                "lambda": o.get("lambda"),
+                "last_time": o.get("lastTime"),
+            }
+
+        try:
+            # Always fetch the default first to get the full expiries list
+            default_data = _fetch()
+            all_expiries = default_data.get("expiries", [])
+
+            if not expiry_start_date:
+                # No date range — return single default expiry
+                return {
+                    "ticker": default_data.get("ticker", ticker),
+                    "expiries_fetched": [default_data.get("currentExpiry")],
+                    "all_expiries": all_expiries,
+                    "options": [_norm(o) for o in default_data.get("options", [])],
+                }
+
+            # Filter expiries within [expiry_start_date, expiry_end_date]
+            candidates = sorted(e for e in all_expiries if e >= expiry_start_date)
+            if expiry_end_date:
+                candidates = [e for e in candidates if e <= expiry_end_date]
+
+            if not candidates:
+                return {
+                    "ticker": ticker,
+                    "expiries_fetched": [],
+                    "all_expiries": all_expiries,
+                    "options": [],
+                }
+
+            # Fetch each expiry in the range, reusing the default response when possible
+            all_options: List[Dict[str, Any]] = []
+            default_expiry = default_data.get("currentExpiry")
+            for exp in candidates:
+                data = default_data if exp == default_expiry else _fetch(exp)
+                all_options.extend(_norm(o) for o in data.get("options", []))
+
+            return {
+                "ticker": ticker,
+                "expiries_fetched": candidates,
+                "all_expiries": all_expiries,
+                "options": all_options,
+            }
+
+        except Exception as e:
+            logger.error(f"Error fetching option chain for {ticker}: {e}")
+            raise
+
     def _fetch_csv_from_url(self, export_url: str, params: Dict[str, Any] = None) -> pd.DataFrame:
         """
         Fetch CSV data from the specified export URL.

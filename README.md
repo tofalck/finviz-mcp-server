@@ -92,9 +92,14 @@ finviz-mcp-server
 The server can be configured using environment variables:
 
 - `FINVIZ_API_KEY`: Your Finviz Elite API key (required for Elite features, improves rate limits)
-- `MCP_SERVER_PORT`: Server port (default: 8080)
-- `LOG_LEVEL`: Logging level (default: INFO)
-- `RATE_LIMIT_REQUESTS_PER_MINUTE`: Rate limiting (default: 100)
+- `LOG_LEVEL`: Logging level (default: `INFO`)
+- `RATE_LIMIT_REQUESTS_PER_MINUTE`: Rate limiting (default: `100`)
+
+**Docker / SSE transport only:**
+- `MCP_TRANSPORT`: Transport mode (`stdio`, `sse`, or `streamable-http`)
+- `MCP_HOST`: Host to bind to (use `0.0.0.0` for Docker, default: `0.0.0.0`)
+- `MCP_PORT`: Port to listen on (default: `8000`)
+- `MCP_ENABLE_DNS_REBINDING`: Enable DNS rebinding protection (default: `false`). Set to `true` when running on localhost or behind a reverse proxy to block requests with non-loopback `Host` headers.
 
 > **Note**: While the API key is technically optional, many advanced screening features require a Finviz Elite subscription and API key to function properly.
 
@@ -158,17 +163,34 @@ Make sure your `.env` file contains all required environment variables.
 
 ### Docker
 
-Build and run the server in a Docker container with SSE transport:
+Build and run the server in a Docker container:
 
 ```bash
 # Build the image
 docker build -t finviz-mcp-server .
 
-# Run with SSE transport
+# Run with streamable-http transport (recommended — required for VS Code "type": "http")
+docker run -d -p 8000:8000 \
+  -e MCP_TRANSPORT=streamable-http \
+  -e MCP_HOST=0.0.0.0 \
+  -e MCP_PORT=8000 \
+  -e FINVIZ_API_KEY=your_key \
+  finviz-mcp-server
+
+# Run with SSE transport (legacy; for clients that only support SSE)
 docker run -d -p 8000:8000 \
   -e MCP_TRANSPORT=sse \
   -e MCP_HOST=0.0.0.0 \
   -e MCP_PORT=8000 \
+  -e FINVIZ_API_KEY=your_key \
+  finviz-mcp-server
+
+# Run with DNS rebinding protection enabled (localhost/reverse-proxy setups)
+docker run -d -p 8000:8000 \
+  -e MCP_TRANSPORT=streamable-http \
+  -e MCP_HOST=0.0.0.0 \
+  -e MCP_PORT=8000 \
+  -e MCP_ENABLE_DNS_REBINDING=true \
   -e FINVIZ_API_KEY=your_key \
   finviz-mcp-server
 ```
@@ -182,17 +204,41 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - MCP_TRANSPORT=sse
+      - MCP_TRANSPORT=streamable-http
       - MCP_HOST=0.0.0.0
       - MCP_PORT=8000
+      - MCP_ENABLE_DNS_REBINDING=false
       - FINVIZ_API_KEY=${FINVIZ_API_KEY}
     restart: unless-stopped
 ```
 
+**Transport modes:**
+- `streamable-http` — modern MCP transport, exposes `POST /mcp`. Use with VS Code `"type": "http"`.
+- `sse` — Server-Sent Events transport, exposes `GET /sse` + `POST /messages`. Use with VS Code `"type": "sse"` or older clients.
+- `stdio` — default; used for local Claude Desktop integration (no network port).
+
+### Integration with VS Code (Remote Docker)
+
+When the container is running with `MCP_TRANSPORT=streamable-http`, add this to your VS Code MCP settings (`.vscode/mcp.json` or user settings):
+
+```json
+{
+  "servers": {
+    "finviz": {
+      "type": "http",
+      "url": "http://<host>:8000/mcp"
+    }
+  }
+}
+```
+
+Replace `<host>` with the hostname or IP of the machine running the container.
+
 **Environment Variables for Docker:**
-- `MCP_TRANSPORT`: Transport mode (`stdio`, `sse`, or `streamable-http`)
+- `MCP_TRANSPORT`: Transport mode — `streamable-http` (VS Code `"type": "http"`), `sse` (VS Code `"type": "sse"` or legacy clients), or `stdio` (default, no network). Both `streamable-http` and `sse` are fully supported for remote/Docker deployments.
 - `MCP_HOST`: Host to bind to (use `0.0.0.0` for Docker)
 - `MCP_PORT`: Port to listen on (default: `8000`)
+- `MCP_ENABLE_DNS_REBINDING`: Enable DNS rebinding protection (default: `false`). Set to `true` when running on localhost or behind a reverse proxy — only `localhost` Host headers will be accepted. Leave `false` for remote/Docker deployments where the host IP is used directly.
 
 ### MCP Tools
 
