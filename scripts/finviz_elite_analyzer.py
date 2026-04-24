@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-Finviz Elite フィルター解析スクリプト
+Finviz Elite filter analysis script
 
-Finviz Elite版のスクリーナーにログインして、
-利用可能な全フィルター項目とその値を詳細に解析するスクリプト。
+Finviz Elitelogin、
+filtervaluedetailsanalysis。
 
 Requirements:
 - requests
 - beautifulsoup4
-- selenium (動的コンテンツ用)
-- pandas (結果整理用)
+- selenium ()
+- pandas (results)
 
 Usage:
     python finviz_elite_analyzer.py
@@ -31,20 +31,20 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 import logging
 
-# ログ設定
+# log settings
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 @dataclass
 class FilterOption:
-    """フィルターオプションのデータクラス"""
+    """filter"""
     value: str
     label: str
     group: Optional[str] = None
 
 @dataclass
 class FilterParameter:
-    """フィルターパラメーターのデータクラス"""
+    """filterparameter"""
     name: str
     id: str
     data_filter: str
@@ -53,7 +53,7 @@ class FilterParameter:
     category: Optional[str] = None
 
 class FinvizEliteAnalyzer:
-    """Finviz Elite フィルター解析クラス"""
+    """Finviz Elite filteranalysis"""
     
     def __init__(self):
         self.base_url = "https://elite.finviz.com"
@@ -63,23 +63,23 @@ class FinvizEliteAnalyzer:
         self.driver = None
         self.filters = []
         
-        # 除外するフィルターのリスト（個人設定等）
+        # excludefilter( items)
         self.excluded_filters = {
-            'screenerpresetsselect',     # スクリーナープリセット選択
-            'screenerpresets',           # スクリーナープリセット
-            'fs_screenerpresetsselect',  # フルIDバージョン
-            'fs_screenerpresets',        # フルIDバージョン
+            'screenerpresetsselect',     # 
+            'screenerpresets',           # 
+            'fs_screenerpresetsselect',  # ID
+            'fs_screenerpresets',        # ID
         }
         
-        # ユーザーエージェント設定
+        # 
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
         
-        logger.info(f"除外フィルター: {', '.join(self.excluded_filters)}")
+        logger.info(f"excludefilter: {', '.join(self.excluded_filters)}")
     
     def setup_selenium_driver(self, headless: bool = True):
-        """Seleniumドライバーをセットアップ"""
+        """Selenium"""
         try:
             chrome_options = Options()
             if headless:
@@ -89,34 +89,34 @@ class FinvizEliteAnalyzer:
             chrome_options.add_argument("--disable-gpu")
             chrome_options.add_argument("--window-size=1920,1080")
             
-            # ChromeDriverの自動ダウンロード（webdriver-managerを使用する場合）
+            # ChromeDriver(webdriver-manager)
             # service = Service(ChromeDriverManager().install())
             
-            # 手動でChromeDriverのパスを指定する場合
-            service = Service()  # システムPATHのchromedriver使用
+            # ChromeDriver
+            service = Service()  # PATHchromedriver
             
             self.driver = webdriver.Chrome(service=service, options=chrome_options)
-            logger.info("Seleniumドライバーをセットアップしました")
+            logger.info("Selenium")
             return True
             
         except Exception as e:
-            logger.error(f"Seleniumドライバーのセットアップに失敗: {e}")
+            logger.error(f"Seleniumfailed: {e}")
             return False
     
     def login_with_selenium(self, username: str, password: str) -> bool:
-        """SeleniumでFinviz Eliteにログイン"""
+        """SeleniumFinviz Elitelogin"""
         try:
             if not self.driver:
                 if not self.setup_selenium_driver():
                     return False
             
-            logger.info("Finviz Eliteにログイン中...")
+            logger.info("Finviz Elitelogin...")
             self.driver.get(self.login_url)
             
-            # ログインフォーム要素を待機
+            # login
             wait = WebDriverWait(self.driver, 10)
             
-            # ユーザー名とパスワードを入力
+            # usernamepassword
             username_field = wait.until(EC.presence_of_element_located((By.NAME, "email")))
             password_field = self.driver.find_element(By.NAME, "password")
             
@@ -125,45 +125,45 @@ class FinvizEliteAnalyzer:
             password_field.clear()
             password_field.send_keys(password)
             
-            # ログインボタンをクリック
+            # login
             login_button = self.driver.find_element(By.XPATH, "//input[@type='submit' and @value='Login']")
             login_button.click()
             
-            # ログイン成功を確認（URLの変化または特定要素の存在を確認）
+            # loginsuccesscheck(URLcheck)
             time.sleep(3)
             
             if "screener.ashx" in self.driver.current_url or self.driver.current_url == f"{self.base_url}/":
-                logger.info("ログインに成功しました")
+                logger.info("loginsuccess")
                 return True
             else:
-                logger.error("ログインに失敗しました")
+                logger.error("loginfailed")
                 return False
                 
         except Exception as e:
-            logger.error(f"ログインエラー: {e}")
+            logger.error(f"loginerror: {e}")
             return False
     
     def navigate_to_screener(self):
-        """スクリーナーページに移動"""
+        """"""
         try:
             self.driver.get(self.screener_url)
             time.sleep(2)
-            logger.info("スクリーナーページに移動しました")
+            logger.info("")
             return True
         except Exception as e:
-            logger.error(f"スクリーナーページ移動エラー: {e}")
+            logger.error(f"error: {e}")
             return False
     
     def extract_filter_parameters(self) -> List[FilterParameter]:
-        """フィルターパラメーターを抽出"""
+        """filterparameterextract"""
         try:
-            # ページのHTMLを取得
+            # HTMLfetch
             html = self.driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
             
             filters = []
             
-            # selectタグのフィルター要素を検索
+            # selectfilter
             select_elements = soup.find_all('select', class_=re.compile(r'screener-combo|fv-select'))
             
             for select in select_elements:
@@ -172,33 +172,33 @@ class FinvizEliteAnalyzer:
                     if filter_param:
                         filters.append(filter_param)
                 except Exception as e:
-                    logger.warning(f"selectエレメント解析エラー: {e}")
+                    logger.warning(f"selectanalysiserror: {e}")
                     continue
             
-            logger.info(f"{len(filters)}個のフィルターパラメーターを検出しました")
+            logger.info(f"{len(filters)} itemsfilterparameterdetect")
             return filters
             
         except Exception as e:
-            logger.error(f"フィルターパラメーター抽出エラー: {e}")
+            logger.error(f"filterparameterextracterror: {e}")
             return []
     
     def _parse_select_element(self, select) -> Optional[FilterParameter]:
-        """selectエレメントを解析してFilterParameterオブジェクトを作成"""
+        """selectanalysisFilterParameterobject"""
         try:
-            # 基本属性を取得
+            # attributefetch
             select_id = select.get('id', '')
             data_filter = select.get('data-filter', '')
             
             if not data_filter:
                 return None
             
-            # 除外フィルターをチェック
+            # excludefilter
             if (select_id.lower() in self.excluded_filters or 
                 data_filter.lower() in self.excluded_filters):
-                logger.debug(f"フィルターを除外しました: {select_id} (data-filter: {data_filter})")
+                logger.debug(f"filterexclude: {select_id} (data-filter: {data_filter})")
                 return None
             
-            # オプションを解析
+            # analysis
             options = []
             current_group = None
             
@@ -216,7 +216,7 @@ class FinvizEliteAnalyzer:
                     )
                     options.append(option)
             
-            # 選択された値を取得
+            # valuefetch
             selected_option = select.find('option', selected=True)
             selected_value = selected_option.get('value', '') if selected_option else None
             
@@ -229,12 +229,12 @@ class FinvizEliteAnalyzer:
             )
             
         except Exception as e:
-            logger.warning(f"selectエレメント解析中にエラー: {e}")
+            logger.warning(f"selectanalysiserror: {e}")
             return None
     
     def _get_filter_name_from_id(self, element_id: str) -> str:
-        """element IDからフィルター名を推定"""
-        # ID → 名前のマッピング
+        """element IDfilter"""
+        # ID → 
         id_to_name = {
             'fs_exch': 'Exchange',
             'fs_idx': 'Index',
@@ -256,62 +256,62 @@ class FinvizEliteAnalyzer:
             'fs_sh_float': 'Float',
             'fs_ta_perf2': 'Performance 2',
             'fs_targetprice': 'Target Price',
-            # 他のマッピングを追加
+            # 
         }
         
         return id_to_name.get(element_id, element_id)
     
     def categorize_filters(self, filters: List[FilterParameter]) -> Dict[str, List[FilterParameter]]:
-        """フィルターをカテゴリー別に分類"""
+        """filtercategory"""
         categories = {
-            '基本情報': [],
-            '株価・時価総額': [],
-            '配当・財務': [],
-            'アナリスト・推奨': [],
-            '日付': [],
-            '出来高・取引': [],
-            '株式発行': [],
-            'テクニカル分析': [],
-            'その他': []
+            'basic information': [],
+            'stock pricemarket cap': [],
+            'dividend': [],
+            'analystrecommendation': [],
+            'date': [],
+            'volume': [],
+            'share issuance': [],
+            'technical analysis': [],
+            'other': []
         }
         
         category_mapping = {
-            'Exchange': '基本情報',
-            'Index': '基本情報',
-            'Sector': '基本情報',
-            'Industry': '基本情報',
-            'Country': '基本情報',
-            'Market Cap': '株価・時価総額',
-            'Price': '株価・時価総額',
-            'Target Price': '株価・時価総額',
-            'Dividend Yield': '配当・財務',
-            'EPS/Revenue Revision': '配当・財務',
-            'Short Float': '配当・財務',
-            'Analyst Recommendation': 'アナリスト・推奨',
-            'Earnings Date': '日付',
-            'IPO Date': '日付',
-            'Average Volume': '出来高・取引',
-            'Relative Volume': '出来高・取引',
-            'Current Volume': '出来高・取引',
-            'Shares Outstanding': '株式発行',
-            'Float': '株式発行',
-            'Performance 2': 'テクニカル分析',
+            'Exchange': 'basic information',
+            'Index': 'basic information',
+            'Sector': 'basic information',
+            'Industry': 'basic information',
+            'Country': 'basic information',
+            'Market Cap': 'stock pricemarket cap',
+            'Price': 'stock pricemarket cap',
+            'Target Price': 'stock pricemarket cap',
+            'Dividend Yield': 'dividend',
+            'EPS/Revenue Revision': 'dividend',
+            'Short Float': 'dividend',
+            'Analyst Recommendation': 'analystrecommendation',
+            'Earnings Date': 'date',
+            'IPO Date': 'date',
+            'Average Volume': 'volume',
+            'Relative Volume': 'volume',
+            'Current Volume': 'volume',
+            'Shares Outstanding': 'share issuance',
+            'Float': 'share issuance',
+            'Performance 2': 'technical analysis',
         }
         
         for filter_param in filters:
-            category = category_mapping.get(filter_param.name, 'その他')
+            category = category_mapping.get(filter_param.name, 'other')
             categories[category].append(filter_param)
         
         return categories
     
     def export_to_markdown(self, filters: List[FilterParameter], output_file: str = 'finviz_elite_filters.md'):
-        """フィルター情報をMarkdown形式でエクスポート"""
+        """filterinformationMarkdownexport as format"""
         try:
             categorized_filters = self.categorize_filters(filters)
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                f.write("# Finviz Elite フィルターパラメーター詳細一覧\n\n")
-                f.write("Elite会員向けの詳細なフィルターパラメーター一覧です。\n\n")
+                f.write("# Finviz Elite filterparameterdetailslist\n\n")
+                f.write("Elitedetailsfilterparameterlist。\n\n")
                 
                 for category, category_filters in categorized_filters.items():
                     if not category_filters:
@@ -323,7 +323,7 @@ class FinvizEliteAnalyzer:
                         f.write(f"### {filter_param.name} - `{filter_param.data_filter}`\n\n")
                         
                         if filter_param.options:
-                            f.write("| 値 | 説明 | グループ |\n")
+                            f.write("| value | description |  |\n")
                             f.write("|---|---|---|\n")
                             
                             for option in filter_param.options:
@@ -334,13 +334,13 @@ class FinvizEliteAnalyzer:
                         
                         f.write("\n")
             
-            logger.info(f"フィルター情報を {output_file} に出力しました")
+            logger.info(f"filterinformation {output_file} output")
             
         except Exception as e:
-            logger.error(f"Markdown出力エラー: {e}")
+            logger.error(f"Markdownoutputerror: {e}")
     
     def export_to_json(self, filters: List[FilterParameter], output_file: str = 'finviz_elite_filters.json'):
-        """フィルター情報をJSON形式でエクスポート"""
+        """filterinformationJSONexport as format"""
         try:
             filter_data = []
             
@@ -364,73 +364,73 @@ class FinvizEliteAnalyzer:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(filter_data, f, ensure_ascii=False, indent=2)
             
-            logger.info(f"フィルター情報を {output_file} に出力しました")
+            logger.info(f"filterinformation {output_file} output")
             
         except Exception as e:
-            logger.error(f"JSON出力エラー: {e}")
+            logger.error(f"JSONoutputerror: {e}")
     
     def analyze_specific_filter(self, data_filter: str) -> Optional[FilterParameter]:
-        """特定のフィルターを詳細解析"""
+        """filterdetailsanalysis"""
         try:
             filters = self.extract_filter_parameters()
             
             for filter_param in filters:
                 if filter_param.data_filter == data_filter:
-                    logger.info(f"フィルター '{data_filter}' の詳細:")
-                    logger.info(f"  名前: {filter_param.name}")
+                    logger.info(f"filter '{data_filter}' details:")
+                    logger.info(f"  : {filter_param.name}")
                     logger.info(f"  ID: {filter_param.id}")
-                    logger.info(f"  選択値: {filter_param.selected_value}")
-                    logger.info(f"  オプション数: {len(filter_param.options)}")
+                    logger.info(f"  value: {filter_param.selected_value}")
+                    logger.info(f"  : {len(filter_param.options)}")
                     
                     return filter_param
             
-            logger.warning(f"フィルター '{data_filter}' が見つかりませんでした")
+            logger.warning(f"filter '{data_filter}' ")
             return None
             
         except Exception as e:
-            logger.error(f"特定フィルター解析エラー: {e}")
+            logger.error(f"filteranalysiserror: {e}")
             return None
     
     def run_full_analysis(self, username: str, password: str, export_format: str = 'both'):
-        """完全なフィルター解析を実行"""
+        """completefilteranalysisrun"""
         try:
-            # Seleniumセットアップ
+            # Selenium
             if not self.setup_selenium_driver():
                 return False
             
-            # ログイン
+            # login
             if not self.login_with_selenium(username, password):
                 return False
             
-            # スクリーナーページに移動
+            # 
             if not self.navigate_to_screener():
                 return False
             
-            # フィルター解析
+            # filteranalysis
             filters = self.extract_filter_parameters()
             
             if not filters:
-                logger.error("フィルターが検出されませんでした")
+                logger.error("filterdetect")
                 return False
             
-            # 結果出力
+            # resultsoutput
             if export_format in ['markdown', 'both']:
                 self.export_to_markdown(filters)
             
             if export_format in ['json', 'both']:
                 self.export_to_json(filters)
             
-            # 統計情報表示
+            # statistics
             categorized = self.categorize_filters(filters)
-            logger.info("=== 解析結果統計 ===")
+            logger.info("=== analysisresultsstatistics ===")
             for category, category_filters in categorized.items():
                 if category_filters:
-                    logger.info(f"{category}: {len(category_filters)}個のフィルター")
+                    logger.info(f"{category}: {len(category_filters)} itemsfilter")
             
             return True
             
         except Exception as e:
-            logger.error(f"完全解析実行エラー: {e}")
+            logger.error(f"completeanalysisrunerror: {e}")
             return False
         
         finally:
@@ -438,28 +438,28 @@ class FinvizEliteAnalyzer:
                 self.driver.quit()
 
 def main():
-    """メイン実行関数"""
+    """mainrunfunction"""
     import getpass
     
-    print("=== Finviz Elite フィルター解析ツール ===")
+    print("=== Finviz Elite filteranalysistool ===")
     print()
     
-    # ログイン情報入力
-    username = input("Finviz Elite ユーザー名: ")
-    password = getpass.getpass("Finviz Elite パスワード: ")
+    # logininformation
+    username = input("Finviz Elite username: ")
+    password = getpass.getpass("Finviz Elite password: ")
     
-    # 解析実行
+    # analysisrun
     analyzer = FinvizEliteAnalyzer()
     
-    print("\nフィルター解析を開始します...")
+    print("\nfilteranalysisstart...")
     success = analyzer.run_full_analysis(username, password, export_format='both')
     
     if success:
-        print("\n✅ 解析が完了しました！")
-        print("📄 finviz_elite_filters.md - Markdown形式の詳細レポート")
-        print("📊 finviz_elite_filters.json - JSON形式の構造化データ")
+        print("\n✅ analysiscompleted")
+        print("📄 finviz_elite_filters.md - Markdownformatdetails")
+        print("📊 finviz_elite_filters.json - JSONformat")
     else:
-        print("\n❌ 解析に失敗しました。ログ情報を確認してください。")
+        print("\n❌ analysisfailed。informationcheck。")
 
 if __name__ == "__main__":
     main() 

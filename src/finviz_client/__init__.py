@@ -1,7 +1,7 @@
 """
-Finviz クライアントパッケージ
+Finviz client package
 
-株式スクリーニング、ニュース、セクター分析、SECファイリング機能を提供
+Provides stock screening, news, sector analysis, and SEC filings functionality
 """
 
 from .base import FinvizClient

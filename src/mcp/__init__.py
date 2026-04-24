@@ -1,4 +1,4 @@
-"""Stub implementation of the MCP package used only when the real
+﻿"""Stub implementation of the MCP package used only when the real
 `mcp` library is not installed.
 
 The official MCP (Model Context Protocol) Python package is not available on
@@ -58,7 +58,7 @@ class FastMCP:  # pylint: disable=too-few-public-methods
         """Return a decorator that leaves the function unchanged."""
         return _ToolDecorator()
 
-    # 以前追加した互換 run メソッドを削除し、元の状態に戻す
+    # Remove previously added compatible run method and restore original state
 
 
 # ----------------------------------------------------------------------------

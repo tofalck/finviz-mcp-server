@@ -1,34 +1,34 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-Finviz HTML クイック解析スクリプト
+Finviz HTML quick analysis script
 
-保存されたFinviz HTMLファイルを簡単に解析するためのラッパースクリプト
+Finviz HTMLfileanalysis
 """
 
 import sys
 import os
 from pathlib import Path
 
-# スクリプトのディレクトリをパスに追加
+# 
 script_dir = Path(__file__).parent
 sys.path.insert(0, str(script_dir))
 
 try:
     from finviz_html_analyzer import FinvizHTMLAnalyzer
 except ImportError as e:
-    print(f"❌ インポートエラー: {e}")
-    print("必要なパッケージをインストールしてください:")
+    print(f"❌ importerror: {e}")
+    print(":")
     print("pip install beautifulsoup4 lxml")
     sys.exit(1)
 
 def quick_html_analyze(html_file: str = None):
-    """HTML解析実行"""
-    print("🔍 Finviz HTML フィルター クイック解析")
+    """HTMLanalysisrun"""
+    print("🔍 Finviz HTML filter quickanalysis")
     print("=" * 50)
     
-    # HTMLファイルのパス確認
+    # HTMLfilecheck
     if html_file is None:
-        # デフォルトの検索順序
+        # default
         default_files = [
             'finviz_screen_page.html',
             '../docs/finviz_screen_page.html',
@@ -45,34 +45,34 @@ def quick_html_analyze(html_file: str = None):
         if found_file:
             html_file = found_file
         else:
-            print("❌ HTMLファイルが見つかりません。")
-            print("\n以下のいずれかのファイルを用意してください:")
+            print("❌ HTMLfile。")
+            print("\nor lessfile:")
             for file_path in default_files:
                 print(f"  - {file_path}")
             
-            # ユーザー入力を促す
-            custom_path = input("\nまたは、HTMLファイルのパスを入力してください: ").strip()
+            # 
+            custom_path = input("\n、HTMLfile: ").strip()
             if custom_path and os.path.exists(custom_path):
                 html_file = custom_path
             else:
-                print("❌ 指定されたHTMLファイルが見つかりません")
+                print("❌ HTMLfile")
                 return False
     
-    print(f"📄 HTMLファイル: {html_file}")
+    print(f"📄 HTMLfile: {html_file}")
     
     try:
-        # 解析器初期化
+        # analysisinitialize
         analyzer = FinvizHTMLAnalyzer(html_file)
         
-        print("🔄 解析中...")
+        print("🔄 analysis...")
         
-        # 解析実行
+        # analysisrun
         success = analyzer.analyze(export_format='both')
         
         if success:
-            print("\n✅ 解析が完了しました！")
+            print("\n✅ analysiscompleted")
             
-            # 出力ファイル確認
+            # outputfilecheck
             stem = Path(html_file).stem
             
             md_file = f"finviz_filters_analysis_{stem}.md"
@@ -86,31 +86,31 @@ def quick_html_analyze(html_file: str = None):
                 size = os.path.getsize(json_file) / 1024
                 print(f"📊 {json_file} ({size:.1f} KB)")
             
-            print("\n💡 使用方法:")
-            print(f"  - Markdown: {md_file} を開いてパラメーター一覧を確認")
-            print(f"  - JSON: {json_file} を開いて構造化データを確認")
+            print("\n💡 usage:")
+            print(f"  - Markdown: {md_file} parameterlistcheck")
+            print(f"  - JSON: {json_file} check")
             
             return True
         else:
-            print("\n❌ 解析に失敗しました")
+            print("\n❌ analysisfailed")
             return False
             
     except FileNotFoundError as e:
-        print(f"❌ ファイルエラー: {e}")
+        print(f"❌ fileerror: {e}")
         return False
     except Exception as e:
-        print(f"❌ 予期しないエラー: {e}")
+        print(f"❌ unexpectederror: {e}")
         return False
 
 def main():
-    """メイン実行関数"""
+    """mainrunfunction"""
     import argparse
     
     parser = argparse.ArgumentParser(
-        description='Finviz HTML クイック解析ツール',
+        description='Finviz HTML quickanalysistool',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-使用例:
+examples:
   python quick_html_analyze.py
   python quick_html_analyze.py finviz_screen_page.html
   python quick_html_analyze.py ../docs/finviz_screen_page.html
@@ -120,7 +120,7 @@ def main():
     parser.add_argument(
         'html_file',
         nargs='?',
-        help='解析するHTMLファイルのパス (省略時は自動検索)'
+        help='analysisHTMLfile ()'
     )
     
     args = parser.parse_args()
@@ -128,11 +128,11 @@ def main():
     success = quick_html_analyze(args.html_file)
     
     if not success:
-        print("\n🔧 トラブルシューティング:")
-        print("1. HTMLファイルが正しいパスにあることを確認")
-        print("2. 必要なパッケージがインストールされていることを確認:")
+        print("\n🔧 :")
+        print("1. HTMLfilecheck")
+        print("2. check:")
         print("   pip install beautifulsoup4 lxml")
-        print("3. HTMLファイルがFinvizスクリーナーページであることを確認")
+        print("3. HTMLfileFinvizcheck")
         return 1
     
     return 0

@@ -4,14 +4,14 @@ from typing import Optional, Dict, Any
 
 @dataclass
 class StockData:
-    """株式データのメインモデル（全Finvizフィールド対応）"""
+    """Main stock data model (supports all Finviz fields)"""
     ticker: str
     company_name: str
     sector: str
     industry: str
     country: Optional[str] = None
     
-    # 基本価格・出来高データ
+    # Basic price & volume data
     price: Optional[float] = None
     price_change: Optional[float] = None
     price_change_percent: Optional[float] = None
@@ -19,7 +19,7 @@ class StockData:
     avg_volume: Optional[int] = None
     relative_volume: Optional[float] = None
     
-    # 新規追加：詳細OHLC データ
+    # New: detailed OHLC data
     prev_close: Optional[float] = None
     open_price: Optional[float] = None
     high_price: Optional[float] = None
@@ -27,7 +27,7 @@ class StockData:
     change_from_open: Optional[float] = None
     trades_count: Optional[int] = None
     
-    # 時間外取引データ
+    # After-hours trading data
     premarket_price: Optional[float] = None
     premarket_change: Optional[float] = None
     premarket_change_percent: Optional[float] = None
@@ -35,7 +35,7 @@ class StockData:
     afterhours_change: Optional[float] = None
     afterhours_change_percent: Optional[float] = None
     
-    # 市場データ
+    # Market data
     market_cap: Optional[float] = None
     income: Optional[float] = None
     sales: Optional[float] = None
@@ -45,13 +45,13 @@ class StockData:
     dividend_yield: Optional[float] = None
     employees: Optional[int] = None
     
-    # 新規追加：指数・分類情報
-    index: Optional[str] = None  # 所属指数（S&P500等）
+    # New: index & classification info
+    index: Optional[str] = None  # Index membership (S&P500, etc.)
     optionable: Optional[bool] = None
     shortable: Optional[bool] = None
     ipo_date: Optional[str] = None
     
-    # バリュエーション指標
+    # Valuation metrics
     pe_ratio: Optional[float] = None
     forward_pe: Optional[float] = None
     peg: Optional[float] = None
@@ -60,7 +60,7 @@ class StockData:
     price_to_cash: Optional[float] = None
     price_to_free_cash_flow: Optional[float] = None
     
-    # 収益性指標
+    # Profitability metrics
     eps: Optional[float] = None
     eps_this_y: Optional[float] = None
     eps_next_y: Optional[float] = None
@@ -73,29 +73,29 @@ class StockData:
     eps_growth_next_5y: Optional[float] = None
     sales_growth_qtr: Optional[float] = None
     eps_growth_qtr: Optional[float] = None
-    eps_next_q: Optional[float] = None  # 新規追加：次四半期EPS予想
+    eps_next_q: Optional[float] = None  # New: next quarter EPS estimate
     
-    # 財務健全性指標
+    # Financial health metrics
     debt_to_equity: Optional[float] = None
     current_ratio: Optional[float] = None
     quick_ratio: Optional[float] = None
     lt_debt_to_equity: Optional[float] = None
     
-    # 収益性マージン
+    # Profitability margins
     gross_margin: Optional[float] = None
     operating_margin: Optional[float] = None
     profit_margin: Optional[float] = None
     
-    # ROE・ROA・ROI
+    # ROE / ROA / ROI
     roe: Optional[float] = None
     roa: Optional[float] = None
     roi: Optional[float] = None
-    roic: Optional[float] = None  # 新規追加：投下資本利益率
+    roic: Optional[float] = None  # New: return on invested capital
     
-    # 配当関連
+    # Dividend data
     payout_ratio: Optional[float] = None
     
-    # 持株構造
+    # Ownership structure
     insider_ownership: Optional[float] = None
     insider_transactions: Optional[float] = None
     institutional_ownership: Optional[float] = None
@@ -104,19 +104,19 @@ class StockData:
     short_ratio: Optional[float] = None
     short_interest: Optional[float] = None
     
-    # 株式数
+    # Share counts
     shares_outstanding: Optional[float] = None
     shares_float: Optional[float] = None
-    float_percentage: Optional[float] = None  # 新規追加：Float %
+    float_percentage: Optional[float] = None  # New: Float %
     
-    # テクニカル・パフォーマンス指標
+    # Technical & performance indicators
     volatility: Optional[float] = None
-    volatility_week: Optional[float] = None  # 新規追加：週次ボラティリティ
-    volatility_month: Optional[float] = None  # 新規追加：月次ボラティリティ
+    volatility_week: Optional[float] = None  # New: weekly volatility
+    volatility_month: Optional[float] = None  # New: monthly volatility
     beta: Optional[float] = None
     atr: Optional[float] = None
     
-    # 新規追加：短時間パフォーマンス
+    # New: short-term performance
     performance_1min: Optional[float] = None
     performance_2min: Optional[float] = None
     performance_3min: Optional[float] = None
@@ -128,7 +128,7 @@ class StockData:
     performance_2h: Optional[float] = None
     performance_4h: Optional[float] = None
     
-    # パフォーマンス
+    # Performance
     performance_1w: Optional[float] = None
     performance_1m: Optional[float] = None
     performance_3m: Optional[float] = None
@@ -138,10 +138,10 @@ class StockData:
     performance_2y: Optional[float] = None
     performance_3y: Optional[float] = None
     performance_5y: Optional[float] = None
-    performance_10y: Optional[float] = None  # 新規追加：10年パフォーマンス
-    performance_since_inception: Optional[float] = None  # 新規追加：設定来パフォーマンス
+    performance_10y: Optional[float] = None  # New: 10-year performance
+    performance_since_inception: Optional[float] = None  # New: performance since inception
     
-    # 移動平均線
+    # Moving averages
     sma_20: Optional[float] = None
     sma_50: Optional[float] = None
     sma_200: Optional[float] = None
@@ -152,25 +152,25 @@ class StockData:
     sma_50_relative: Optional[float] = None
     sma_200_relative: Optional[float] = None
     
-    # 高値・安値
+    # 52-week high & low
     week_52_high: Optional[float] = None
     week_52_low: Optional[float] = None
     high_52w_relative: Optional[float] = None
     low_52w_relative: Optional[float] = None
     
-    # 新規追加：50日高値・安値
+    # New: 50-day high & low
     day_50_high: Optional[float] = None
     day_50_low: Optional[float] = None
     all_time_high: Optional[float] = None
     all_time_low: Optional[float] = None
     
-    # テクニカル指標
+    # Technical indicators
     rsi: Optional[float] = None
     rsi_14: Optional[float] = None
     rel_volume: Optional[float] = None
     avg_true_range: Optional[float] = None
     
-    # 決算関連データ
+    # Earnings data
     earnings_date: Optional[str] = None
     earnings_timing: Optional[str] = None
     eps_surprise: Optional[float] = None
@@ -184,14 +184,14 @@ class StockData:
     eps_revision: Optional[float] = None
     revenue_revision: Optional[float] = None
     
-    # アナリスト推奨・目標価格
+    # Analyst recommendation & target price
     target_price: Optional[float] = None
     analyst_recommendation: Optional[str] = None
     
-    # オプション関連
+    # Options data
     average_volume: Optional[int] = None
     
-    # ETF専用フィールド（新規追加）
+    # ETF-specific fields (new)
     single_category: Optional[str] = None
     asset_type: Optional[str] = None
     etf_type: Optional[str] = None
@@ -204,7 +204,7 @@ class StockData:
     nav: Optional[float] = None  # Net Asset Value
     nav_percent: Optional[float] = None
     
-    # ETFフロー関連（新規追加）
+    # ETF flow data (new)
     net_flows_1m: Optional[float] = None
     net_flows_1m_percent: Optional[float] = None
     net_flows_3m: Optional[float] = None
@@ -214,22 +214,22 @@ class StockData:
     net_flows_1y: Optional[float] = None
     net_flows_1y_percent: Optional[float] = None
     
-    # その他のFinviz指標
+    # Other Finviz metrics
     gap: Optional[float] = None
-    tags: Optional[str] = None  # 新規追加：タグ情報
+    tags: Optional[str] = None  # New: tags
     
     def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
+        """Convert to dictionary."""
         return asdict(self)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'StockData':
-        """辞書から作成"""
+        """Create from dictionary."""
         return cls(**data)
 
 @dataclass
 class NewsData:
-    """ニュースデータモデル"""
+    """News data model"""
     ticker: str
     title: str
     source: str
@@ -238,23 +238,23 @@ class NewsData:
     category: str
     
     def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
+        """Convert to dictionary."""
         data = asdict(self)
-        # datetime を文字列に変換
+        # Convert datetime to string
         data['date'] = self.date.isoformat()
         return data
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'NewsData':
-        """辞書から作成"""
-        # 文字列の日付を datetime に変換
+        """Create from dictionary."""
+        # Convert string date to datetime
         if isinstance(data.get('date'), str):
             data['date'] = datetime.fromisoformat(data['date'])
         return cls(**data)
 
 @dataclass
 class SectorPerformance:
-    """セクターパフォーマンスデータモデル"""
+    """Sector performance data model"""
     sector: str
     performance_1d: float
     performance_1w: float
@@ -265,23 +265,23 @@ class SectorPerformance:
     stock_count: int
     
     def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
+        """Convert to dictionary."""
         return asdict(self)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'SectorPerformance':
-        """辞書から作成"""
+        """Create from dictionary."""
         return cls(**data)
 
 @dataclass
 class EarningsData:
-    """決算データモデル"""
+    """Earnings data model"""
     ticker: str
     company_name: str
     earnings_date: str
     earnings_timing: str  # "before" or "after"
     
-    # 価格データ
+    # Price data
     pre_earnings_price: Optional[float] = None
     post_earnings_price: Optional[float] = None
     premarket_price: Optional[float] = None
@@ -290,12 +290,12 @@ class EarningsData:
     price_change_percent: Optional[float] = None
     gap_percent: Optional[float] = None
     
-    # 出来高データ
+    # Volume data
     volume: Optional[int] = None
     avg_volume: Optional[int] = None
     relative_volume: Optional[float] = None
     
-    # 決算結果・サプライズ
+    # Earnings results & surprises
     eps_surprise: Optional[float] = None
     revenue_surprise: Optional[float] = None
     eps_estimate: Optional[float] = None
@@ -304,7 +304,7 @@ class EarningsData:
     revenue_actual: Optional[float] = None
     earnings_revision: Optional[str] = None
     
-    # 市場反応・分析
+    # Market reaction & analysis
     market_reaction: Optional[str] = None  # "positive", "negative", "neutral"
     volatility: Optional[float] = None
     beta: Optional[float] = None
@@ -313,24 +313,24 @@ class EarningsData:
     trading_opportunity_score: Optional[float] = None  # 1-10
     
     def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
+        """Convert to dictionary."""
         return asdict(self)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'EarningsData':
-        """辞書から作成"""
+        """Create from dictionary."""
         return cls(**data)
 
 @dataclass
 class ScreeningResult:
-    """スクリーニング結果のコンテナ"""
+    """Container for screening results"""
     query_parameters: Dict[str, Any]
     results: list
     total_count: int
     execution_time: Optional[float] = None
     
     def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
+        """Convert to dictionary."""
         return {
             'query_parameters': self.query_parameters,
             'results': [stock.to_dict() for stock in self.results],
@@ -340,7 +340,7 @@ class ScreeningResult:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ScreeningResult':
-        """辞書から作成"""
+        """Create from dictionary."""
         results = [StockData.from_dict(item) for item in data.get('results', [])]
         return cls(
             query_parameters=data.get('query_parameters', {}),
@@ -349,18 +349,18 @@ class ScreeningResult:
             execution_time=data.get('execution_time')
         )
 
-# 古いマッピング定数は削除され、constants.pyに統合されました
+# Old mapping constants have been removed and consolidated into constants.py
 
-# Finvizのフィールドマッピング定数（既存のシンプル版も保持）
+# Finviz field mapping constants (simple version retained for compatibility)
 FINVIZ_FIELD_MAPPING = {
-    # 基本情報
+    # Basic info
     'ticker': 'Ticker',
     'company': 'Company',
     'sector': 'Sector',
     'industry': 'Industry',
     'country': 'Country',
     
-    # 価格・出来高
+    # Price & volume
     'price': 'Price',
     'change': 'Change',
     'change_percent': 'Change',
@@ -368,7 +368,7 @@ FINVIZ_FIELD_MAPPING = {
     'avg_volume': 'Average Volume',
     'relative_volume': 'Relative Volume',
     
-    # 市場データ
+    # Market data
     'market_cap': 'Market Cap',
     'pe_ratio': 'P/E',
     'forward_pe': 'Forward P/E',
@@ -376,7 +376,7 @@ FINVIZ_FIELD_MAPPING = {
     'eps': 'EPS (ttm)',
     'dividend_yield': 'Dividend Yield',
     
-    # テクニカル指標
+    # Technical indicators
     'rsi': 'Relative Strength Index (14)',
     'beta': 'Beta',
     'volatility': 'Volatility (Week)',
@@ -384,12 +384,12 @@ FINVIZ_FIELD_MAPPING = {
     'performance_1m': 'Performance (Month)',
     'performance_ytd': 'Performance (YTD)',
     
-    # 移動平均
+    # Moving averages
     'sma_20': '20-Day Simple Moving Average',
     'sma_50': '50-Day Simple Moving Average',
     'sma_200': '200-Day Simple Moving Average',
     
-    # その他
+    # Other
     'target_price': 'Target Price',
     'analyst_recom': 'Analyst Recom',
     'insider_own': 'Insider Ownership',
@@ -400,7 +400,7 @@ FINVIZ_FIELD_MAPPING = {
     'earnings_date': 'Earnings Date'
 }
 
-# セクター定数
+# Sector constants
 SECTORS = [
     'Basic Materials',
     'Communication Services', 
@@ -415,7 +415,7 @@ SECTORS = [
     'Utilities'
 ]
 
-# 時価総額フィルタ定数
+# Market cap filter constants
 MARKET_CAP_FILTERS = {
     'mega': 'Mega ($200bln and more)',
     'large': 'Large ($10bln to $200bln)',
@@ -429,7 +429,7 @@ MARKET_CAP_FILTERS = {
 
 @dataclass
 class UpcomingEarningsData:
-    """来週決算予定データモデル"""
+    """Upcoming earnings data model"""
     ticker: str
     company_name: str
     sector: str
@@ -437,12 +437,12 @@ class UpcomingEarningsData:
     earnings_date: str
     earnings_timing: str  # "before" or "after"
     
-    # 基本株価データ
+    # Basic stock price data
     current_price: Optional[float] = None
     market_cap: Optional[float] = None
     avg_volume: Optional[int] = None
     
-    # 決算予想データ
+    # Earnings forecast data
     eps_estimate: Optional[float] = None
     revenue_estimate: Optional[float] = None
     eps_estimate_revision: Optional[float] = None
@@ -450,13 +450,13 @@ class UpcomingEarningsData:
     analyst_count: Optional[int] = None
     estimate_trend: Optional[str] = None  # "improving", "declining", "stable"
     
-    # 過去のサプライズ履歴
+    # Historical surprise data
     historical_eps_surprise: Optional[list] = None
     historical_revenue_surprise: Optional[list] = None
     avg_eps_surprise: Optional[float] = None
     avg_revenue_surprise: Optional[float] = None
     
-    # 評価・推奨データ
+    # Valuation & recommendation data
     pe_ratio: Optional[float] = None
     forward_pe: Optional[float] = None
     peg: Optional[float] = None
@@ -465,7 +465,7 @@ class UpcomingEarningsData:
     analyst_recommendation: Optional[str] = None
     recent_rating_changes: Optional[list] = None
     
-    # リスク評価指標
+    # Risk assessment metrics
     volatility: Optional[float] = None
     beta: Optional[float] = None
     short_interest: Optional[float] = None
@@ -473,14 +473,14 @@ class UpcomingEarningsData:
     insider_ownership: Optional[float] = None
     institutional_ownership: Optional[float] = None
     
-    # パフォーマンス・テクニカル指標
+    # Performance & technical indicators
     performance_1w: Optional[float] = None
     performance_1m: Optional[float] = None
     performance_3m: Optional[float] = None
     sma_200_relative: Optional[float] = None
     rsi: Optional[float] = None
     
-    # オプション活動（オプション）
+    # Options activity (optional)
     options_volume: Optional[int] = None
     put_call_ratio: Optional[float] = None
     implied_volatility: Optional[float] = None
@@ -488,17 +488,17 @@ class UpcomingEarningsData:
 
     
     def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
+        """Convert to dictionary."""
         return asdict(self)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'UpcomingEarningsData':
-        """辞書から作成"""
+        """Create from dictionary."""
         return cls(**data)
 
 @dataclass
 class SECFilingData:
-    """SECファイリングデータモデル"""
+    """SEC filing data model"""
     ticker: str
     filing_date: str
     report_date: str
@@ -508,10 +508,10 @@ class SECFilingData:
     document_url: str
     
     def to_dict(self) -> Dict[str, Any]:
-        """辞書形式に変換"""
+        """Convert to dictionary."""
         return asdict(self)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'SECFilingData':
-        """辞書から作成"""
+        """Create from dictionary."""
         return cls(**data)

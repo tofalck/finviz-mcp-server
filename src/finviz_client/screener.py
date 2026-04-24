@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from typing import Dict, List, Optional, Any
 from urllib.parse import urlencode
 
@@ -8,113 +8,113 @@ from ..models import StockData, ScreeningResult, UpcomingEarningsData, MARKET_CA
 logger = logging.getLogger(__name__)
 
 class FinvizScreener(FinvizClient):
-    """Finvizスクリーニング機能専用クライアント"""
+    """Dedicated Finviz screening client."""
     
     def __init__(self, api_key: Optional[str] = None):
         super().__init__(api_key)
     
     def earnings_screener(self, **kwargs) -> List[StockData]:
         """
-        決算発表予定銘柄のスクリーニング
+        Screen for stocks with upcoming earnings dates.
         
         Args:
-            earnings_date: 決算発表日の指定
-            market_cap: 時価総額フィルタ
-            min_price: 最低株価
-            max_price: 最高株価
-            min_volume: 最低出来高
-            sectors: 対象セクター
-            premarket_price_change: 寄り付き前価格変動フィルタ
-            afterhours_price_change: 時間外価格変動フィルタ
+            earnings_date: Earnings date filter
+            market_cap: Market cap filter
+            min_price: Minimum price
+            max_price: Maximum price
+            min_volume: Minimum volume
+            sectors: Target sectors
+            premarket_price_change: Pre-market price change filter
+            afterhours_price_change: After-hours price change filter
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_earnings_filters(**kwargs)
         return self.screen_stocks(filters)
     
     def volume_surge_screener(self) -> List[StockData]:
         """
-        出来高急増を伴う上昇銘柄のスクリーニング（固定条件）
+        Screen for stocks with surging volume (fixed criteria).
         
-        固定フィルタ条件（変更不可）：
+        Fixed filter criteria (not configurable):
         f=cap_smallover,ind_stocksonly,sh_avgvol_o100,sh_price_o10,sh_relvol_o1.5,ta_change_u2,ta_sma200_pa&ft=4&o=-change&ar=10
         
-        - 時価総額：スモール以上 ($300M+)
-        - 株式のみ：ETF除外
-        - 平均出来高：100,000以上
-        - 株価：$10以上
-        - 相対出来高：1.5倍以上
-        - 価格変動：2%以上上昇
-        - 200日移動平均線上
-        - 価格変動降順ソート
-        - 最大結果件数：10件
+        - Market cap: Small+ ($300M+)
+        - Stocks only: No ETFs
+        - Average volume: 100,000+
+        - Price: $10+
+        - Relative volume: 1.5x+
+        - Price change: 2%+ up
+        - Above 200-day moving average
+        - Sorted by price change descending
+        - Max results: 10
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_volume_surge_filters()
         results = self.screen_stocks(filters)
         
-        # 固定ソート（価格変動率降順）
+        # Fixed sort (price change descending)
         results.sort(key=lambda x: x.price_change or 0, reverse=True)
         
-        # 全件返す（制限なし）
+        # Return all results (no limit)
         return results
     
     def uptrend_screener(self) -> List[StockData]:
         """
-        上昇トレンド銘柄のスクリーニング（固定条件）
+        Screen for stocks in an uptrend (fixed criteria).
         
-        固定フィルタ条件（変更不可）：
+        Fixed filter criteria (not configurable):
         f=cap_microover,sh_avgvol_o100,sh_price_o10,ta_highlow52w_a30h,ta_perf2_4wup,ta_sma20_pa,ta_sma200_pa,ta_sma50_sa200&ft=4&o=-epsyoy1
         
-        - 時価総額：マイクロ以上（$50M+）
-        - 平均出来高：100K以上
-        - 株価：$10以上
-        - 52週高値から30%以内
-        - 4週パフォーマンス上昇
-        - 20日移動平均線上
-        - 200日移動平均線上
-        - 50日移動平均線が200日移動平均線上
-        - 株式のみ
-        - EPS成長率（年次）降順ソート
+        - Market cap: Micro+ ($50M+)
+        - Average volume: 100K+
+        - Price: $10+
+        - Within 30% of 52-week high
+        - 4-week performance up
+        - Above 20-day moving average
+        - Above 200-day moving average
+        - 50-day MA above 200-day MA
+        - Stocks only
+        - Sorted by EPS growth (YoY) descending
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_uptrend_filters()
         results = self.screen_stocks(filters)
         
-        # Finvizで既にソートされているので、そのまま返す
+        # Already sorted by Finviz, return as-is
         return results
     
     def dividend_growth_screener(self, **kwargs) -> List[StockData]:
         """
-        配当成長銘柄のスクリーニング
+        Screen for dividend growth stocks.
         
         Args:
-            min_dividend_yield: 最低配当利回り
-            max_dividend_yield: 最高配当利回り
-            min_dividend_growth: 最低配当成長率
-            min_payout_ratio: 最低配当性向
-            max_payout_ratio: 最高配当性向
-            min_roe: 最低ROE
-            max_debt_equity: 最高負債比率
-            max_results: 最大取得件数
+            min_dividend_yield: Minimum dividend yield
+            max_dividend_yield: Maximum dividend yield
+            min_dividend_growth: Minimum dividend growth rate
+            min_payout_ratio: Minimum payout ratio
+            max_payout_ratio: Maximum payout ratio
+            min_roe: Minimum ROE
+            max_debt_equity: Maximum debt-to-equity ratio
+            max_results: Maximum number of results
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_dividend_growth_filters(**kwargs)
         results = self.screen_stocks(filters)
         
-        # 結果制限とソート
+        # Limit and sort results
         max_results = kwargs.get('max_results', 100)
         sort_by = kwargs.get('sort_by', 'dividend_yield')
         sort_order = kwargs.get('sort_order', 'desc')
         
-        # ソート処理
+        # Sort processing
         if sort_by == 'dividend_yield':
             results.sort(key=lambda x: x.dividend_yield or 0, reverse=(sort_order == 'desc'))
         elif sort_by == 'market_cap':
@@ -124,27 +124,27 @@ class FinvizScreener(FinvizClient):
     
     def etf_screener(self, **kwargs) -> List[StockData]:
         """
-        ETF戦略用スクリーニング
+        Screen ETFs by strategy.
         
         Args:
-            strategy_type: 戦略タイプ
-            asset_class: 資産クラス
-            min_aum: 最低運用資産額
-            max_expense_ratio: 最高経費率
-            max_results: 最大取得件数
+            strategy_type: Strategy type
+            asset_class: Asset class
+            min_aum: Minimum AUM
+            max_expense_ratio: Maximum expense ratio
+            max_results: Maximum number of results
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_etf_filters(**kwargs)
         results = self.screen_stocks(filters)
         
-        # 結果制限とソート
+        # Limit and sort results
         max_results = kwargs.get('max_results', 50)
         sort_by = kwargs.get('sort_by', 'aum')
         sort_order = kwargs.get('sort_order', 'desc')
         
-        # ソート処理
+        # Sort processing
         if sort_by == 'aum':
             results.sort(key=lambda x: x.aum or 0, reverse=(sort_order == 'desc'))
         elif sort_by == 'expense_ratio':
@@ -154,70 +154,70 @@ class FinvizScreener(FinvizClient):
     
     def earnings_premarket_screener(self) -> List[StockData]:
         """
-        寄り付き前決算発表で上昇している銘柄のスクリーニング（固定条件）
+        Screen for stocks rising on pre-market earnings (fixed criteria).
         
-        固定フィルタ条件（変更不可）：
+        Fixed filter criteria (not configurable):
         f=cap_smallover,earningsdate_todaybefore,sh_avgvol_o100,sh_price_o10,ta_change_u2&ft=4&o=-change
         
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_earnings_premarket_filters()
         results = self.screen_stocks(filters)
         
-        # 固定ソート（価格変動率降順）
+        # Fixed sort (price change descending)
         results.sort(key=lambda x: x.price_change or 0, reverse=True)
         
         return results
     
     def earnings_afterhours_screener(self) -> List[StockData]:
         """
-        引け後決算発表で時間外取引上昇銘柄のスクリーニング（固定条件）
+        Screen for stocks rising in after-hours trading after earnings (fixed criteria).
         
-        固定フィルタ条件（変更不可）：
+        Fixed filter criteria (not configurable):
         f=ah_change_u2,cap_smallover,earningsdate_todayafter,sh_avgvol_o100,sh_price_o30&ft=4&o=-afterchange&ar=60
         
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_earnings_afterhours_filters()
         results = self.screen_stocks(filters)
         
-        # 固定ソート（時間外変動率降順）
+        # Fixed sort (after-hours change descending)
         results.sort(key=lambda x: x.afterhours_change_percent or 0, reverse=True)
         
-        # 固定結果件数（60件）
+        # Fixed result count (60)
         return results[:60]
     
     def earnings_trading_screener(self) -> List[StockData]:
         """
-        決算トレード対象銘柄のスクリーニング（固定条件）
+        Screen for earnings trade candidates (fixed criteria).
         
-        固定フィルタ: f=cap_smallover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,sh_avgvol_o200,sh_price_o10,ta_change_u,ta_perf_0to-4w,ta_volatility_1tox&ft=4&o=-epssurprise&ar=60
+        Fixed filters: f=cap_smallover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,sh_avgvol_o200,sh_price_o10,ta_change_u,ta_perf_0to-4w,ta_volatility_1tox&ft=4&o=-epssurprise&ar=60
 
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_earnings_trading_filters()
         results = self.screen_stocks(filters)
         
-        # EPSサプライズ降順ソート（固定）
+        # Sort by EPS surprise descending (fixed)
         results.sort(key=lambda x: x.eps_surprise or 0, reverse=True)
         
-        # 最大60件（固定）
+        # Max 60 results (fixed)
         return results[:60]
     
     def earnings_positive_surprise_screener(self, **kwargs) -> List[StockData]:
         """
-        今週決算発表でポジティブサプライズがあって上昇している銘柄のスクリーニング
+        Screen for this-week earnings stocks with positive surprise and price gain.
         
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_earnings_positive_surprise_filters(**kwargs)
         results = self.screen_stocks(filters)
         
-        # ソートと制限
+        # Sort and limit
         max_results = kwargs.get('max_results', 50)
         sort_by = kwargs.get('sort_by', 'eps_qoq_growth')
         
@@ -230,29 +230,29 @@ class FinvizScreener(FinvizClient):
     
     def trend_reversion_screener(self, **kwargs) -> List[StockData]:
         """
-        トレンド反転候補銘柄のスクリーニング
+        Screen for trend reversion candidates.
         
         Args:
-            market_cap: 時価総額フィルタ
-            eps_growth_qoq: EPS成長率(QoQ) 最低値
-            revenue_growth_qoq: 売上成長率(QoQ) 最低値
-            rsi_max: RSI上限値
-            sectors: 対象セクター
-            exclude_sectors: 除外セクター
-            max_results: 最大取得件数
+            market_cap: Market cap filter
+            eps_growth_qoq: Minimum EPS growth QoQ
+            revenue_growth_qoq: Minimum revenue growth QoQ
+            rsi_max: Maximum RSI
+            sectors: Target sectors
+            exclude_sectors: Sectors to exclude
+            max_results: Maximum number of results
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_trend_reversion_filters(**kwargs)
         results = self.screen_stocks(filters)
         
-        # 結果制限とソート
+        # Limit and sort results
         max_results = kwargs.get('max_results', 50)
         sort_by = kwargs.get('sort_by', 'rsi')
-        sort_order = kwargs.get('sort_order', 'asc')  # RSIは低い順
+        sort_order = kwargs.get('sort_order', 'asc')  # RSI ascending (lowest first)
         
-        # ソート処理
+        # Sort processing
         if sort_by == 'rsi':
             results.sort(key=lambda x: x.rsi or 0, reverse=(sort_order == 'desc'))
         elif sort_by == 'eps_growth_qoq':
@@ -262,21 +262,21 @@ class FinvizScreener(FinvizClient):
     
     def get_relative_volume_stocks(self, **kwargs) -> List[StockData]:
         """
-        相対出来高異常銘柄の検出
+        Detect stocks with unusual relative volume.
         
         Args:
-            min_relative_volume: 最低相対出来高
-            min_price: 最低株価
-            sectors: 対象セクター
-            max_results: 最大取得件数
+            min_relative_volume: Minimum relative volume
+            min_price: Minimum price
+            sectors: Target sectors
+            max_results: Maximum number of results
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_relative_volume_filters(**kwargs)
         results = self.screen_stocks(filters)
         
-        # 相対出来高でソート
+        # Sort by relative volume
         results.sort(key=lambda x: x.relative_volume or 0, reverse=True)
         
         max_results = kwargs.get('max_results', 50)
@@ -284,21 +284,21 @@ class FinvizScreener(FinvizClient):
     
     def technical_analysis_screener(self, **kwargs) -> List[StockData]:
         """
-        テクニカル分析ベースのスクリーニング
+        Technical analysis-based screening.
         
         Args:
-            rsi_min: RSI最低値
-            rsi_max: RSI最高値
-            price_vs_sma20: 20日移動平均との関係
-            price_vs_sma50: 50日移動平均との関係
-            price_vs_sma200: 200日移動平均との関係
-            min_price: 最低株価
-            min_volume: 最低出来高
-            sectors: 対象セクター
-            max_results: 最大取得件数
+            rsi_min: Minimum RSI
+            rsi_max: Maximum RSI
+            price_vs_sma20: Relationship to 20-day moving average
+            price_vs_sma50: Relationship to 50-day moving average
+            price_vs_sma200: Relationship to 200-day moving average
+            min_price: Minimum price
+            min_volume: Minimum volume
+            sectors: Target sectors
+            max_results: Maximum number of results
             
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         filters = self._build_technical_analysis_filters(**kwargs)
         results = self.screen_stocks(filters)
@@ -307,28 +307,28 @@ class FinvizScreener(FinvizClient):
         return results[:max_results]
     
     def _build_earnings_filters(self, **kwargs) -> Dict[str, Any]:
-        """決算スクリーニング用フィルタを構築"""
+        """Build filters for earnings screening."""
         filters = {}
         
-        # 決算発表日
+        # Earnings date
         if 'earnings_date' in kwargs:
             filters['earnings_date'] = kwargs['earnings_date']
         
-        # 時価総額
+        # Market cap
         if 'market_cap' in kwargs:
             filters['market_cap'] = kwargs['market_cap']
         
-        # 価格範囲
+        # Price range
         if 'min_price' in kwargs:
             filters['price_min'] = kwargs['min_price']
         if 'max_price' in kwargs:
             filters['price_max'] = kwargs['max_price']
         
-        # 出来高
+        # Volume
         if 'min_volume' in kwargs:
             filters['volume_min'] = kwargs['min_volume']
         
-        # セクター
+        # Sector
         if 'sectors' in kwargs and kwargs['sectors']:
             filters['sectors'] = kwargs['sectors']
         
@@ -336,155 +336,155 @@ class FinvizScreener(FinvizClient):
     
     def _build_volume_surge_filters(self) -> Dict[str, Any]:
         """
-        出来高急増スクリーニング用フィルタを構築（固定条件）
+        Build filters for volume surge screening (fixed criteria).
         
-        固定フィルタ条件（変更不可）：
+        Fixed filter criteria (not configurable):
         f=cap_smallover,ind_stocksonly,sh_avgvol_o100,sh_price_o10,sh_relvol_o1.5,ta_change_u2,ta_sma200_pa&ft=4&o=-change
         
-        - 時価総額：スモール以上 ($300M+)
-        - 株式のみ
-        - 平均出来高：100,000以上
-        - 株価：$10以上
-        - 相対出来高：1.5倍以上
-        - 価格変動：2%以上上昇
-        - 200日移動平均線上
-        - 価格変動降順ソート
-        - 全件取得（制限なし）
+        - Market cap: Small+ ($300M+)
+        - Stocks only
+        - Average volume: 100,000+
+        - Price: $10+
+        - Relative volume: 1.5x+
+        - Price change: 2%+ up
+        - Above 200-day moving average
+        - Sorted by price change descending
+        - No limit on results
         """
         filters = {}
         
-        # 固定条件を設定
-        # 時価総額：スモール以上
+        # Set fixed criteria
+        # Market cap: Small+
         filters['market_cap'] = 'smallover'
         
-        # 平均出来高：100,000以上
+        # Average volume: 100,000+
         filters['avg_volume_min'] = 100000
         
-        # 株価：$10以上
+        # Price: $10+
         filters['price_min'] = 10.0
         
-        # 相対出来高：1.5倍以上
+        # Relative volume: 1.5x+
         filters['relative_volume_min'] = 1.5
         
-        # 価格変動：2%以上上昇
+        # Price change: 2%+ up
         filters['price_change_min'] = 2.0
         
-        # 200日移動平均線上
+        # Above 200-day moving average
         filters['sma200_above'] = True
         
-        # ソート条件（価格変動降順）
+        # Sort condition (price change descending)
         filters['sort_by'] = 'price_change'
         filters['sort_order'] = 'desc'
         
-        # 株式のみ（ETFなどを除外）
+        # Stocks only (no ETFs)
         filters['stocks_only'] = True
         
-        # 全件取得（制限なし）
-        # filters['max_results'] = 削除
+        # No result limit
+        # filters['max_results'] = removed
         
         return filters
     
     def _build_uptrend_filters(self) -> Dict[str, Any]:
         """
-        上昇トレンドフィルタを構築（固定条件）
+        Build uptrend filters (fixed criteria).
         
-        固定フィルタ条件（変更不可）：
+        Fixed filter criteria (not configurable):
         f=cap_microover,sh_avgvol_o100,sh_price_o10,ta_highlow52w_a30h,ta_perf2_4wup,ta_sma20_pa,ta_sma200_pa,ta_sma50_sa200&ft=4&o=-epsyoy1
         
-        - 時価総額：マイクロ以上（$50M+）
-        - 平均出来高：100K以上
-        - 株価：$10以上
-        - 52週高値から30%以内
-        - 4週パフォーマンス上昇
-        - 20日移動平均線上
-        - 200日移動平均線上
-        - 50日移動平均線が200日移動平均線上
-        - 株式のみ
-        - EPS成長率（年次）降順ソート
+        - Market cap: Micro+ ($50M+)
+        - Average volume: 100K+
+        - Price: $10+
+        - Within 30% of 52-week high
+        - 4-week performance up
+        - Above 20-day moving average
+        - Above 200-day moving average
+        - 50-day MA above 200-day MA
+        - Stocks only
+        - Sorted by EPS growth (YoY) descending
         """
         filters = {}
         
-        # デフォルト条件を設定（Finviz推奨に合わせる）
-        # 時価総額：マイクロ以上（修正）
+        # Set default criteria (aligned with Finviz recommendations)
+        # Market cap: Micro+ (updated)
         filters['market_cap'] = 'microover'
         
-        # 平均出来高：100K以上（修正：100000 → 100）
+        # Average volume: 100K+ (updated: 100000 → 100)
         filters['avg_volume_min'] = 100
         
-        # 株価：10以上（小数点を除去）
+        # Price: 10+ (remove decimal)
         filters['price_min'] = 10
         
-        # 52週高値から30%以内（小数点を除去）
+        # Within 30% of 52-week high (remove decimal)
         filters['near_52w_high'] = 30
         
-        # 4週パフォーマンス上昇（新規追加）
+        # 4-week performance up (new)
         filters['performance_4w_positive'] = True
         
-        # 移動平均線条件
+        # Moving average conditions
         filters['sma20_above'] = True
         filters['sma200_above'] = True
         filters['sma50_above_sma200'] = True
         
-        # ソート条件（EPS年次成長率降順に修正）
+        # Sort condition (EPS YoY growth descending, corrected)
         filters['sort_by'] = 'eps_growth_yoy'
         filters['sort_order'] = 'desc'
         
-        # 株式のみ（ETFなどを除外）
+        # Stocks only (no ETFs)
         filters['stocks_only'] = True
         
         return filters
     
     def _build_dividend_growth_filters(self, **kwargs) -> Dict[str, Any]:
         """
-        配当成長フィルタを構築
+        Build dividend growth filters.
         
-        デフォルト条件：
-        - 時価総額：ミッド以上 (cap_midover)
-        - 配当利回り：2%以上 (fa_div_o2)
-        - EPS 5年成長率：プラス (fa_eps5years_pos)
-        - EPS QoQ成長率：プラス (fa_epsqoq_pos)
-        - EPS YoY成長率：プラス (fa_epsyoy_pos)
-        - PBR：5以下 (fa_pb_u5)
-        - PER：30以下 (fa_pe_u30)
-        - 売上5年成長率：プラス (fa_sales5years_pos)
-        - 売上QoQ成長率：プラス (fa_salesqoq_pos)
-        - 地域：アメリカ (geo_usa)
-        - 株式のみ (ft=4)
-        - 200日移動平均でソート (o=sma200)
+        Default criteria:
+        - Market cap: Mid+ (cap_midover)
+        - Dividend yield: 2%+ (fa_div_o2)
+        - EPS 5-year growth: Positive (fa_eps5years_pos)
+        - EPS QoQ growth: Positive (fa_epsqoq_pos)
+        - EPS YoY growth: Positive (fa_epsyoy_pos)
+        - P/B ratio: Under 5 (fa_pb_u5)
+        - P/E ratio: Under 30 (fa_pe_u30)
+        - Sales 5-year growth: Positive (fa_sales5years_pos)
+        - Sales QoQ growth: Positive (fa_salesqoq_pos)
+        - Region: USA (geo_usa)
+        - Stocks only (ft=4)
+        - Sorted by 200-day SMA (o=sma200)
         """
         filters = {}
         
-        # デフォルト条件を設定
-        # 時価総額：ミッド以上
+        # Set default criteria
+        # Market cap: Mid+
         filters['market_cap'] = kwargs.get('market_cap', 'midover')
         
-        # 配当利回り：2%以上
+        # Dividend yield: 2%+
         filters['dividend_yield_min'] = kwargs.get('min_dividend_yield', 2.0)
         
-        # EPS成長率条件
+        # EPS growth criteria
         filters['eps_growth_5y_positive'] = kwargs.get('eps_growth_5y_positive', True)
         filters['eps_growth_qoq_positive'] = kwargs.get('eps_growth_qoq_positive', True)
         filters['eps_growth_yoy_positive'] = kwargs.get('eps_growth_yoy_positive', True)
         
-        # バリュエーション条件
+        # Valuation criteria
         filters['pb_ratio_max'] = kwargs.get('max_pb_ratio', 5.0)
         filters['pe_ratio_max'] = kwargs.get('max_pe_ratio', 30.0)
         
-        # 売上成長率条件
+        # Sales growth criteria
         filters['sales_growth_5y_positive'] = kwargs.get('sales_growth_5y_positive', True)
         filters['sales_growth_qoq_positive'] = kwargs.get('sales_growth_qoq_positive', True)
         
-        # 地域：アメリカ
+        # Region: USA
         filters['country'] = kwargs.get('country', 'USA')
         
-        # 株式のみ
+        # Stocks only
         filters['stocks_only'] = kwargs.get('stocks_only', True)
         
-        # ソート条件（200日移動平均）
+        # Sort condition (200-day SMA)
         filters['sort_by'] = kwargs.get('sort_by', 'sma200')
         filters['sort_order'] = kwargs.get('sort_order', 'asc')
         
-        # 追加条件があれば設定
+        # Additional criteria if provided
         if 'max_dividend_yield' in kwargs:
             filters['dividend_yield_max'] = kwargs['max_dividend_yield']
         
@@ -506,7 +506,7 @@ class FinvizScreener(FinvizClient):
         return filters
     
     def _build_etf_filters(self, **kwargs) -> Dict[str, Any]:
-        """ETFフィルタを構築"""
+        """Build ETF filters."""
         filters = {}
         
         strategy_type = kwargs.get('strategy_type', 'long')
@@ -523,155 +523,155 @@ class FinvizScreener(FinvizClient):
     
     def _build_earnings_premarket_filters(self) -> Dict[str, Any]:
         """
-        寄り付き前決算フィルタを構築
+        Build pre-market earnings filters.
         
-        デフォルト条件：
-        - 時価総額：スモール以上 (cap_smallover)
-        - 決算発表：今日の寄り付き前 (earningsdate_todaybefore)
-        - 平均出来高：100K以上 (sh_avgvol_o100)
-        - 株価：10以上 (sh_price_o10)
-        - 価格変動：2%以上上昇 (ta_change_u2)
-        - 株式のみ (ft=4)
-        - 価格変動降順ソート (o=-change)
-        - 最大結果件数：60件 (ar=60)
+        Default criteria:
+        - Market cap: Small+ (cap_smallover)
+        - Earnings date: Today before open (earningsdate_todaybefore)
+        - Average volume: 100K+ (sh_avgvol_o100)
+        - Price: $10+ (sh_price_o10)
+        - Price change: 2%+ up (ta_change_u2)
+        - Stocks only (ft=4)
+        - Sort by price change descending (o=-change)
+        - Max results: 60 (ar=60)
         """
         filters = {}
         
-        # デフォルト条件を設定
-        # 決算発表タイミング：今日の寄り付き前
+        # Set default criteria
+        # Earnings timing: Today before open
         filters['earnings_date'] = 'today_before'
         
-        # 時価総額：スモール以上
+        # Market cap: Small+
         filters['market_cap'] = 'smallover'
         
-        # 平均出来高：100K以上
+        # Average volume: 100K+
         filters['avg_volume_min'] = 100000
         
-        # 株価：10以上
+        # Price: $10+
         filters['price_min'] = 10.0
         
-        # 価格変動：2%以上上昇
+        # Price change: 2%+ up
         filters['price_change_min'] = 2.0
         
-        # 株式のみ
+        # Stocks only
         filters['stocks_only'] = True
         
-        # ソート条件（価格変動降順）
+        # Sort condition (price change descending)
         filters['sort_by'] = 'price_change'
         filters['sort_order'] = 'desc'
         
-        # 最大結果件数
+        # Max results
         filters['max_results'] = 60
         
         return filters
     
     def _build_earnings_afterhours_filters(self) -> Dict[str, Any]:
         """
-        引け後決算・時間外取引フィルタを構築
+        Build after-hours earnings filters.
         
-        デフォルト条件：
-        - 時間外取引変動：2%以上上昇 (ah_change_u2)
-        - 時価総額：スモール以上 (cap_smallover)
-        - 決算発表：今日の引け後 (earningsdate_todayafter)
-        - 平均出来高：100K以上 (sh_avgvol_o100)
-        - 株価：10以上 (sh_price_o10)
-        - 株式のみ (ft=4)
-        - 時間外変動降順ソート (o=-afterchange)
-        - 最大結果件数：60件 (ar=60)
+        Default criteria:
+        - After-hours change: 2%+ up (ah_change_u2)
+        - Market cap: Small+ (cap_smallover)
+        - Earnings date: Today after close (earningsdate_todayafter)
+        - Average volume: 100K+ (sh_avgvol_o100)
+        - Price: $10+ (sh_price_o10)
+        - Stocks only (ft=4)
+        - Sort by after-hours change descending (o=-afterchange)
+        - Max results: 60 (ar=60)
         """
         filters = {}
         
-        # デフォルト条件を設定
-        # 決算発表タイミング：今日の引け後
+        # Set default criteria
+        # Earnings timing: Today after close
         filters['earnings_date'] = 'today_after'
         
-        # 時価総額：スモール以上
+        # Market cap: Small+
         filters['market_cap'] = 'smallover'
         
-        # 平均出来高：100K以上
+        # Average volume: 100K+
         filters['avg_volume_min'] = 100000
         
-        # 株価：10以上
+        # Price: $10+
         filters['price_min'] = 10.0
         
-        # 時間外取引変動：2%以上上昇
+        # After-hours change: 2%+ up
         filters['afterhours_change_min'] = 2.0
         
-        # 株式のみ
+        # Stocks only
         filters['stocks_only'] = True
         
-        # ソート条件（時間外変動降順）
+        # Sort condition (after-hours change descending)
         filters['sort_by'] = 'afterhours_change'
         filters['sort_order'] = 'desc'
         
-        # 最大結果件数
+        # Max results
         filters['max_results'] = 60
         
         return filters
     
     def _build_earnings_trading_filters(self) -> Dict[str, Any]:
         """
-        決算トレードフィルタを構築（固定条件）
+        Build earnings trading filters (fixed criteria).
         
-        固定フィルタ: f=cap_midover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,fa_netmargin_3to,sh_avgvol_o200,sh_price_o30,ta_change_u,ta_perf_0to-4w&ft=4&o=-epssurprise&ar=60
+        Fixed filters: f=cap_midover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,fa_netmargin_3to,sh_avgvol_o200,sh_price_o30,ta_change_u,ta_perf_0to-4w&ft=4&o=-epssurprise&ar=60
         
-        固定条件：
-        - 時価総額：ミッド以上 (cap_midover)
-        - 決算発表：昨日の引け後または今日の寄り付き前 (earningsdate_yesterdayafter|todaybefore)
-        - EPS予想：上方修正 (fa_epsrev_ep)
-        - ネットマージン：3%以上 (fa_netmargin_3to)
-        - 平均出来高：200K以上 (sh_avgvol_o200)
-        - 株価：$30以上 (sh_price_o30)
-        - 価格変動：上昇 (ta_change_u)
-        - 4週パフォーマンス：月間プラス（Month Above 0%） (ta_perf_0to-4w)
-        - 株式のみ (ft=4)
-        - EPSサプライズ降順ソート (o=-epssurprise)
-        - 最大結果件数：60件 (ar=60)
+        Fixed criteria:
+        - Market cap: Mid+ (cap_midover)
+        - Earnings date: Yesterday after close or today before open (earningsdate_yesterdayafter|todaybefore)
+        - EPS estimate: Upward revision (fa_epsrev_ep)
+        - Net margin: 3%+ (fa_netmargin_3to)
+        - Average volume: 200K+ (sh_avgvol_o200)
+        - Price: $30+ (sh_price_o30)
+        - Price change: Up (ta_change_u)
+        - 4-week performance: Month Above 0% (ta_perf_0to-4w)
+        - Stocks only (ft=4)
+        - Sorted by EPS surprise descending (o=-epssurprise)
+        - Max results: 60 (ar=60)
         """
-        # 固定条件を設定
+        # Set fixed criteria
         filters = {
-            # 決算発表期間：昨日の引け後または今日の寄り付き前
+            # Earnings period: Yesterday after close or today before open
             'earnings_recent': True,
             
-            # 時価総額：ミッド以上
+            # Market cap: Mid+
             'market_cap': 'midover',
             
-            # EPS予想：上方修正
+            # EPS estimate: Upward revision
             'earnings_revision_positive': True,
             
-            # ネットマージン：3%以上
+            # Net margin: 3%+
             'net_margin_min': 3.0,
             
-            # 平均出来高：200K以上
+            # Average volume: 200K+
             'avg_volume_min': 200000,
             
-            # 株価：$30以上
+            # Price: $30+
             'price_min': 30.0,
             
-            # 価格変動：上昇
+            # Price change: Up
             'price_change_positive': True,
             
-            # 4週パフォーマンス：月間プラス（Month Above 0%）
+            # 4-week performance: Month Above 0%
             'performance_4w_range': '0_to_negative_4w',
             
-            # 株式のみ
+            # Stocks only
             'stocks_only': True,
             
-            # ソート条件（EPSサプライズ降順）
+            # Sort condition (EPS surprise descending)
             'sort_by': 'eps_surprise',
             'sort_order': 'desc',
             
-            # 最大結果件数
+            # Max results
             'max_results': 60,
             
-            # earnings_trading_screener専用の識別子
+            # Identifier for earnings_trading_screener
             'screener_type': 'earnings_trading'
         }
         
         return filters
     
     def _build_earnings_positive_surprise_filters(self, **kwargs) -> Dict[str, Any]:
-        """決算ポジティブサプライズフィルタを構築"""
+        """Build positive earnings surprise filters."""
         filters = {}
         
         filters['earnings_date'] = 'this_week'
@@ -681,12 +681,12 @@ class FinvizScreener(FinvizClient):
         if 'min_price' in kwargs:
             filters['price_min'] = kwargs['min_price']
         
-        # 成長性フィルタ
+        # Growth filter
         growth_criteria = kwargs.get('growth_criteria', {})
         if growth_criteria.get('min_eps_qoq_growth'):
             filters['eps_growth_min'] = growth_criteria['min_eps_qoq_growth']
         
-        # パフォーマンスフィルタ
+        # Performance filter
         performance_criteria = kwargs.get('performance_criteria', {})
         if performance_criteria.get('above_sma200'):
             filters['sma200_above'] = True
@@ -695,41 +695,41 @@ class FinvizScreener(FinvizClient):
     
     def upcoming_earnings_screener(self, **kwargs) -> List[UpcomingEarningsData]:
         """
-        来週決算予定銘柄のスクリーニング
+        Screen for next-week earnings stocks.
         
         Args:
-            earnings_period: 決算発表期間 ('next_week', 'next_2_weeks', 'next_month')
-            market_cap: 時価総額フィルタ
-            min_price: 最低株価
-            min_avg_volume: 最低平均出来高
-            target_sectors: 対象セクター
-            max_results: 最大取得件数
-            sort_by: ソート基準
-            sort_order: ソート順序
+            earnings_period: Earnings period ('next_week', 'next_2_weeks', 'next_month')
+            market_cap: Market cap filter
+            min_price: Minimum price
+            min_avg_volume: Minimum average volume
+            target_sectors: Target sectors
+            max_results: Maximum number of results
+            sort_by: Sort field
+            sort_order: Sort order
         
         Returns:
-            UpcomingEarningsData のリスト
+            List of UpcomingEarningsData objects
         """
         try:
-            # フィルタを構築
+            # Build filters
             filters = self._build_upcoming_earnings_filters(**kwargs)
             
-            # Finvizからデータを取得
+            # Fetch data from Finviz
             raw_results = self.screen_stocks(filters)
             
-            # UpcomingEarningsDataに変換
+            # Convert to UpcomingEarningsData
             results = []
             for stock in raw_results:
                 upcoming_data = self._convert_to_upcoming_earnings_data(stock, **kwargs)
                 if upcoming_data:
                     results.append(upcoming_data)
             
-            # ソート
+            # Sort
             sort_by = kwargs.get('sort_by', 'earnings_date')
             sort_order = kwargs.get('sort_order', 'asc')
             results = self._sort_upcoming_earnings_results(results, sort_by, sort_order)
             
-            # 件数制限
+            # Limit results
             max_results = kwargs.get('max_results', 100)
             return results[:max_results]
             
@@ -739,34 +739,34 @@ class FinvizScreener(FinvizClient):
     
     def earnings_winners_screener(self, **kwargs) -> List[StockData]:
         """
-        決算後上昇銘柄のスクリーニング（決算勝ち組）
+        Screen for post-earnings winning stocks.
         
         Args:
-            earnings_period: 決算発表期間
-            market_cap: 時価総額フィルタ  
-            min_price: 最低株価
-            min_avg_volume: 最低平均出来高
-            min_eps_growth_qoq: 最低EPS前四半期比成長率
-            min_eps_revision: 最低EPS予想改訂率
-            min_sales_growth_qoq: 最低売上前四半期比成長率
-            min_weekly_performance: 週次パフォーマンスフィルタ
-            sma200_filter: 200日移動平均線上のフィルタ
-            target_sectors: 対象セクター
-            max_results: 最大取得件数
-            sort_by: ソート基準
-            sort_order: ソート順序
+            earnings_period: Earnings period
+            market_cap: Market cap filter  
+            min_price: Minimum price
+            min_avg_volume: Minimum average volume
+            min_eps_growth_qoq: Minimum EPS QoQ growth
+            min_eps_revision: Minimum EPS estimate revision
+            min_sales_growth_qoq: Minimum sales QoQ growth
+            min_weekly_performance: Weekly performance filter
+            sma200_filter: Filter for above 200-day moving average
+            target_sectors: Target sectors
+            max_results: Maximum number of results
+            sort_by: Sort field
+            sort_order: Sort order
         
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         try:
-            # フィルタを構築
+            # Build filters
             filters = self._build_earnings_winners_filters(**kwargs)
             
-            # Finvizからデータを取得
+            # Fetch data from Finviz
             results = self.screen_stocks(filters)
             
-            # ソート
+            # Sort
             sort_by = kwargs.get('sort_by', 'performance_1w')
             sort_order = kwargs.get('sort_order', 'desc')
             
@@ -779,7 +779,7 @@ class FinvizScreener(FinvizClient):
             elif sort_by == 'volume':
                 results.sort(key=lambda x: x.volume or 0, reverse=(sort_order == 'desc'))
             
-            # 件数制限
+            # Limit results
             max_results = kwargs.get('max_results', 50)
             return results[:max_results]
             
@@ -788,10 +788,10 @@ class FinvizScreener(FinvizClient):
             return []
     
     def _build_earnings_winners_filters(self, **kwargs) -> Dict[str, Any]:
-        """決算後上昇銘柄スクリーニング用フィルタを構築"""
+        """Build filters for post-earnings winning stocks screener."""
         filters = {}
         
-        # 決算発表期間（直接指定されたearnings_dateが優先）
+        # Earnings period (direct earnings_date takes priority)
         if 'earnings_date' in kwargs:
             filters['earnings_date'] = kwargs['earnings_date']
         else:
@@ -805,49 +805,49 @@ class FinvizScreener(FinvizClient):
             else:
                 filters['earnings_date'] = 'thisweek'
         
-        # 時価総額（デフォルト：small over）
+        # Market cap (default: small over)
         market_cap = kwargs.get('market_cap', 'smallover')
         if market_cap in MARKET_CAP_FILTERS:
             filters['market_cap'] = market_cap
         
-        # 価格（デフォルト：10以上）
+        # Price (default: $10+)
         min_price = kwargs.get('min_price', 10.0)
         if min_price:
             filters['price_min'] = min_price
         
-        # 平均出来高（デフォルト：500K以上）
+        # Average volume (default: 500K+)
         min_avg_volume = kwargs.get('min_avg_volume', 500000)
         if min_avg_volume:
-            # 数値と文字列の両方をサポート
+            # Support both numbers and strings
             finviz_volume = self._convert_volume_to_finviz_format(min_avg_volume)
             filters['avg_volume_min'] = finviz_volume
         
-        # EPS前四半期比成長率（デフォルト：10%以上）
+        # EPS QoQ growth (default: 10%+)
         min_eps_growth_qoq = kwargs.get('min_eps_growth_qoq', 10.0)
         if min_eps_growth_qoq:
             filters['eps_growth_qoq_min'] = min_eps_growth_qoq
         
-        # EPS予想改訂（デフォルト：5%以上）
+        # EPS estimate revision (default: 5%+)
         min_eps_revision = kwargs.get('min_eps_revision', 5.0)
         if min_eps_revision:
             filters['eps_revision_min'] = min_eps_revision
         
-        # 売上前四半期比成長率（デフォルト：5%以上）
+        # Sales QoQ growth (default: 5%+)
         min_sales_growth_qoq = kwargs.get('min_sales_growth_qoq', 5.0)
         if min_sales_growth_qoq:
             filters['sales_growth_qoq_min'] = min_sales_growth_qoq
         
-        # 週次パフォーマンス（デフォルト：5日〜1週間）
+        # Weekly performance (default: 5 days to 1 week)
         min_weekly_performance = kwargs.get('min_weekly_performance', '5to-1w')
         if min_weekly_performance:
             filters['weekly_performance'] = min_weekly_performance
         
-        # 200日移動平均線上（デフォルト：True）
+        # Above 200-day moving average (default: True)
         sma200_filter = kwargs.get('sma200_filter', True)
         if sma200_filter:
             filters['sma200_above'] = True
         
-        # セクター（デフォルト：主要セクター）
+        # Sectors (default: major sectors)
         target_sectors = kwargs.get('target_sectors', [
             'Technology', 'Industrials', 'Healthcare', 
             'Communication Services', 'Consumer Cyclical', 'Financial Services'
@@ -855,7 +855,7 @@ class FinvizScreener(FinvizClient):
         if target_sectors:
             filters['sectors'] = target_sectors
         
-        # 結果数制限
+        # Result count limit
         max_results = kwargs.get('max_results', 50)
         if max_results:
             filters['max_results'] = max_results
@@ -863,15 +863,15 @@ class FinvizScreener(FinvizClient):
         return filters
     
     def _build_upcoming_earnings_filters(self, **kwargs) -> Dict[str, Any]:
-        """来週決算予定スクリーニング用フィルタを構築"""
+        """Build filters for upcoming earnings screener."""
         filters = {}
         
-        # 決算発表期間（直接指定されたearnings_dateが優先）
+        # Earnings period (direct earnings_date takes priority)
         if 'earnings_date' in kwargs:
-            # 直接指定されたearnings_dateパラメータを使用
+            # Use directly specified earnings_date parameter
             filters['earnings_date'] = kwargs['earnings_date']
         else:
-            # earnings_periodからearnings_dateに変換
+            # Convert earnings_period to earnings_date
             earnings_period = kwargs.get('earnings_period', 'next_week')
             if earnings_period == 'next_week':
                 filters['earnings_date'] = 'next_week'
@@ -880,29 +880,29 @@ class FinvizScreener(FinvizClient):
             elif earnings_period == 'next_month':
                 filters['earnings_date'] = 'next_month'
         
-        # 時価総額（デフォルト：small over）
+        # Market cap (default: small over)
         market_cap = kwargs.get('market_cap', 'smallover')
         if market_cap in MARKET_CAP_FILTERS:
             filters['market_cap'] = market_cap
         
-        # 価格（デフォルト：10以上）
+        # Price (default: $10+)
         min_price = kwargs.get('min_price', 10)
         if min_price:
             filters['price_min'] = min_price
         
-        # 平均出来高（デフォルト：500K = o500）
+        # Average volume (default: 500K = o500)
         min_avg_volume = kwargs.get('min_avg_volume', 500000)
         if min_avg_volume:
-            # 数値と文字列の両方をサポート
+            # Support both numbers and strings
             finviz_volume = self._convert_volume_to_finviz_format(min_avg_volume)
             filters['avg_volume_min'] = finviz_volume
         
-        # 結果数制限
+        # Result count limit
         max_results = kwargs.get('max_results')
         if max_results:
             filters['max_results'] = max_results
         
-        # セクター（デフォルト：主要セクター）
+        # Sectors (default: major sectors)
         target_sectors = kwargs.get('target_sectors', [
             'Technology', 'Industrials', 'Healthcare', 
             'Communication Services', 'Consumer Cyclical', 
@@ -914,40 +914,40 @@ class FinvizScreener(FinvizClient):
         return filters
     
     def _convert_to_upcoming_earnings_data(self, stock: StockData, **kwargs) -> Optional[UpcomingEarningsData]:
-        """StockDataをUpcomingEarningsDataに変換"""
+        """Convert StockData to UpcomingEarningsData"""
         try:
-            # 基本情報
+            # Basic info
             upcoming_data = UpcomingEarningsData(
                 ticker=stock.ticker,
                 company_name=stock.company_name or "",
                 sector=stock.sector or "",
                 industry=stock.industry or "",
                 earnings_date=stock.earnings_date or "",
-                earnings_timing="unknown"  # Finvizからは取得困難
+                earnings_timing="unknown"  # Hard to determine from Finviz
             )
             
-            # 基本株価データ
+            # Basic stock price data
             upcoming_data.current_price = stock.price
             upcoming_data.market_cap = stock.market_cap
             upcoming_data.avg_volume = stock.avg_volume
             
-            # 評価・推奨データ
+            # Valuation & recommendation data
             upcoming_data.pe_ratio = stock.pe_ratio
             upcoming_data.target_price = stock.target_price
             upcoming_data.analyst_recommendation = stock.analyst_recommendation
             
-            # 目標価格までのアップサイド計算
+            # Calculate upside to target price
             if stock.target_price and stock.price and stock.price > 0:
                 upcoming_data.target_price_upside = ((stock.target_price - stock.price) / stock.price) * 100
             
-            # リスク評価指標
+            # Risk assessment metrics
             upcoming_data.volatility = stock.volatility
             upcoming_data.beta = stock.beta
             upcoming_data.short_interest = stock.short_interest
             upcoming_data.insider_ownership = stock.insider_ownership
             upcoming_data.institutional_ownership = stock.institutional_ownership
             
-            # パフォーマンス・テクニカル指標
+            # Performance & technical indicators
             upcoming_data.performance_1w = stock.performance_1w
             upcoming_data.performance_1m = stock.performance_1m
             upcoming_data.rsi = stock.rsi
@@ -966,7 +966,7 @@ class FinvizScreener(FinvizClient):
     
     def _sort_upcoming_earnings_results(self, results: List[UpcomingEarningsData], 
                                       sort_by: str, sort_order: str) -> List[UpcomingEarningsData]:
-        """来週決算予定結果をソート"""
+        """Sort upcoming earnings results."""
         reverse = sort_order.lower() == 'desc'
         
         if sort_by == 'earnings_date':
@@ -984,7 +984,7 @@ class FinvizScreener(FinvizClient):
         return results
     
     def _build_trend_reversion_filters(self, **kwargs) -> Dict[str, Any]:
-        """トレンド反転フィルタを構築"""
+        """Build trend reversion filters."""
         filters = {}
         
         market_cap = kwargs.get('market_cap', 'mid_large')
@@ -1008,10 +1008,10 @@ class FinvizScreener(FinvizClient):
         return filters
     
     def _build_relative_volume_filters(self, **kwargs) -> Dict[str, Any]:
-        """相対出来高フィルタを構築"""
+        """Build relative volume filters."""
         filters = {}
         
-        # 必須パラメータ
+        # Required parameter
         filters['relative_volume_min'] = kwargs['min_relative_volume']
         
         if 'min_price' in kwargs:
@@ -1023,7 +1023,7 @@ class FinvizScreener(FinvizClient):
         return filters
     
     def _build_technical_analysis_filters(self, **kwargs) -> Dict[str, Any]:
-        """テクニカル分析フィルタを構築"""
+        """Build technical analysis filters."""
         filters = {}
         
         if 'rsi_min' in kwargs:

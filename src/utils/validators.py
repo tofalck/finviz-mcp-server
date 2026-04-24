@@ -1,87 +1,87 @@
-import re
+﻿import re
 from typing import Optional, List, Any, Dict, Tuple, Union
 from ..constants import ALL_PARAMETERS
 
 def validate_ticker(ticker: str) -> bool:
     """
-    ティッカーシンボルの妥当性をチェック
+    Validate a ticker symbol.
     
     Args:
-        ticker: ティッカーシンボル
+        ticker: Ticker symbol
         
     Returns:
-        有効なティッカーかどうか
+        Whether the ticker is valid
     """
     if not ticker or not isinstance(ticker, str):
         return False
     
-    # 基本的なパターンチェック（1-5文字のアルファベット）
+    # Basic pattern check (1-5 uppercase letters)
     pattern = r'^[A-Z]{1,5}$'
     return bool(re.match(pattern, ticker.upper()))
 
 def validate_tickers(tickers: str) -> bool:
     """
-    複数のティッカーシンボルの妥当性をチェック
+    Validate multiple ticker symbols.
     
     Args:
-        tickers: カンマ区切りのティッカーシンボル文字列
+        tickers: Comma-separated ticker symbol string
         
     Returns:
-        すべてのティッカーが有効かどうか
+        Whether all tickers are valid
     """
     if not tickers or not isinstance(tickers, str):
         return False
     
-    # カンマで分割して各ティッカーを検証
+    # Split by comma and validate each ticker
     ticker_list = [t.strip() for t in tickers.split(',') if t.strip()]
     
     if not ticker_list:
         return False
     
-    # すべてのティッカーが有効かチェック
+    # Check that all tickers are valid
     return all(validate_ticker(ticker) for ticker in ticker_list)
 
 def parse_tickers(tickers: str) -> List[str]:
     """
-    カンマ区切りのティッカー文字列をリストに変換
+    Convert a comma-separated ticker string to a list.
     
     Args:
-        tickers: カンマ区切りのティッカーシンボル文字列
+        tickers: Comma-separated ticker symbol string
         
     Returns:
-        ティッカーシンボルのリスト
+        List of ticker symbols
     """
     if not tickers or not isinstance(tickers, str):
         return []
     
-    # カンマで分割して空白を除去し、大文字に変換
+    # Split by comma, strip whitespace, and convert to uppercase
     return [t.strip().upper() for t in tickers.split(',') if t.strip()]
 
 def validate_price_range(min_price: Optional[Union[int, float, str]], max_price: Optional[Union[int, float, str]]) -> bool:
     """
-    価格範囲の妥当性をチェック
+    Validate a price range.
     
     Args:
-        min_price: 最低価格（数値またはFinvizプリセット形式 'o5', 'u10'）
-        max_price: 最高価格（数値またはFinvizプリセット形式 'o5', 'u10'）
+        min_price: Minimum price (numeric or Finviz preset format 'o5', 'u10')
+        max_price: Maximum price (numeric or Finviz preset format 'o5', 'u10')
         
     Returns:
-        有効な価格範囲かどうか
+        Whether the price range is valid
     """
     def _convert_to_float(value):
-        """価格値を数値に変換（Finviz形式も対応）"""
+        """Convert a price value to a float (also handles Finviz format)."""
         if value is None:
             return None
         if isinstance(value, (int, float)):
             return float(value)
         if isinstance(value, str):
-            # Finvizプリセット形式の場合（例: 'o5', 'u10'）
+            # Finviz preset format (e.g. 'o5', 'u10')
             if value.startswith(('o', 'u')):
                 try:
                     return float(value[1:])
                 except ValueError:
                     return None
-            # 数値文字列の場合
+            # For numeric string case
             try:
                 return float(value)
             except ValueError:
@@ -104,27 +104,27 @@ def validate_price_range(min_price: Optional[Union[int, float, str]], max_price:
 
 def validate_market_cap(market_cap: str) -> bool:
     """
-    時価総額フィルタの妥当性をチェック
+    Validate a market cap filter value.
     
     Args:
-        market_cap: 時価総額フィルタ
+        market_cap: Market cap filter value
         
     Returns:
-        有効な時価総額フィルタかどうか
+        Whether the market cap filter is valid
     """
     return market_cap in ALL_PARAMETERS['cap']
 
 def validate_earnings_date(earnings_date: str) -> bool:
     """
-    決算発表日フィルタの妥当性をチェック
+    Validate an earnings date filter value.
     
     Args:
-        earnings_date: 決算発表日フィルタ
+        earnings_date: Earnings date filter value
         
     Returns:
-        有効な決算発表日フィルタかどうか
+        Whether the earnings date filter is valid
     """
-    # APIレベルの有効な決算日値を定義
+    # Define valid earnings date values at API level
     valid_api_values = {
         'today_after',
         'today_before', 
@@ -144,17 +144,17 @@ def validate_earnings_date(earnings_date: str) -> bool:
 
 def validate_sector(sector: str) -> bool:
     """
-    セクター名の妥当性をチェック
+    Validate a sector name.
     
     Args:
-        sector: セクター名
+        sector: Sector name
         
     Returns:
-        有効なセクター名かどうか
+        Whether the sector name is valid
     """
-    # APIレベルの有効なセクター名を定義
+    # Valid sector names at the API level
     valid_api_sectors = {
-        # ユーザーフレンドリーなセクター名
+        # User-friendly sector names
         'Basic Materials',
         'Communication Services', 
         'Consumer Cyclical',
@@ -166,7 +166,7 @@ def validate_sector(sector: str) -> bool:
         'Real Estate',
         'Technology',
         'Utilities',
-        # 内部パラメータ値も受け入れ
+        # Internal parameter values are also accepted
         'basicmaterials',
         'communicationservices',
         'consumercyclical', 
@@ -184,47 +184,47 @@ def validate_sector(sector: str) -> bool:
 
 def validate_percentage(value: float, min_val: float = -100, max_val: float = 1000) -> bool:
     """
-    パーセンテージ値の妥当性をチェック
+    Validate a percentage value.
     
     Args:
-        value: パーセンテージ値
-        min_val: 最小値
-        max_val: 最大値
+        value: Percentage value
+        min_val: Minimum value
+        max_val: Maximum value
         
     Returns:
-        有効なパーセンテージ値かどうか
+        Whether the percentage value is valid
     """
     return min_val <= value <= max_val
 
 def validate_volume(volume: Union[int, float, str]) -> bool:
     """
-    出来高の妥当性をチェック（数値とFinviz文字列形式の両方対応）
+    Validate a volume value (supports both numeric and Finviz string formats).
     
     Args:
-        volume: 出来高（数値またはFinviz形式: o100, u500, 500to2000など）
+        volume: Volume value (numeric or Finviz format: o100, u500, 500to2000, etc.)
         
     Returns:
-        有効な出来高かどうか
+        Whether the volume value is valid
     """
     if isinstance(volume, (int, float)):
         return volume >= 0
     
     if isinstance(volume, str):
-        # 数値文字列のチェックを追加（整数と浮動小数点の両方）
+        # Also check for numeric strings (both integers and floats)
         try:
             return float(volume) >= 0
         except ValueError:
-            pass  # 数値でない場合は下のFinviz形式チェックに進む
+            pass  # If not numeric, proceed to Finviz format check below
             
-        # Finviz平均出来高形式の検証
+        # Validate Finviz average volume format
         
-        # Under/Over patterns (固定値)
+        # Under/Over patterns (fixed values)
         fixed_patterns = {
             # Under patterns
             'u50', 'u100', 'u500', 'u750', 'u1000',
             # Over patterns  
             'o50', 'o100', 'o200', 'o300', 'o400', 'o500', 'o750', 'o1000', 'o2000',
-            # 既存の範囲パターン（下位互換性）
+            # Existing range patterns (backward compatibility)
             '100to500', '100to1000', '500to1000', '500to10000',
             # Custom
             'frange'
@@ -233,8 +233,8 @@ def validate_volume(volume: Union[int, float, str]) -> bool:
         if volume in fixed_patterns:
             return True
         
-        # カスタム範囲パターン（数値to数値）の検証
-        # 例: 500to2000, 100to500, 1000to5000
+        # Validate custom range pattern (numbertonumber)
+        # e.g.: 500to2000, 100to500, 1000to5000
         import re
         range_pattern = r'^\d+to\d*$'
         if re.match(range_pattern, volume):
@@ -246,17 +246,17 @@ def validate_volume(volume: Union[int, float, str]) -> bool:
 
 def validate_screening_params(params: Dict[str, Any]) -> List[str]:
     """
-    スクリーニングパラメータの妥当性をチェック（完全版）
+    Validate screening parameters (full version).
     
     Args:
-        params: スクリーニングパラメータ
+        params: Screening parameters
         
     Returns:
-        エラーメッセージのリスト（空の場合は全て有効）
+        List of error messages (empty list means all valid)
     """
     errors = []
     
-    # 基本パラメータの検証
+    # Validate basic parameters
     basic_params = {
         'exchange': 'exch',
         'index': 'idx', 
@@ -285,13 +285,13 @@ def validate_screening_params(params: Dict[str, Any]) -> List[str]:
             if params[param_name] not in ALL_PARAMETERS[param_key]:
                 errors.append(f"Invalid {param_name}: {params[param_name]}")
     
-    # 価格範囲チェック
+    # Check price range
     min_price = params.get('min_price')
     max_price = params.get('max_price')
     if not validate_price_range(min_price, max_price):
         errors.append("Invalid price range")
     
-    # 数値範囲チェック
+    # Check numeric ranges
     numeric_range_params = [
         'pe_min', 'pe_max', 'forward_pe_min', 'forward_pe_max',
         'peg_min', 'peg_max', 'ps_min', 'ps_max', 'pb_min', 'pb_max',
@@ -321,26 +321,26 @@ def validate_screening_params(params: Dict[str, Any]) -> List[str]:
             if not isinstance(params[param], (int, float)):
                 errors.append(f"Invalid {param}: must be numeric")
     
-    # 複数セクターチェック
+    # Multiple sectors check
     if 'sectors' in params and params['sectors']:
         for sector in params['sectors']:
             if not validate_sector(sector):
                 errors.append(f"Invalid sector: {sector}")
     
-    # 除外セクターチェック
+    # Excluded sectors check
     if 'exclude_sectors' in params and params['exclude_sectors']:
         for sector in params['exclude_sectors']:
             if not validate_sector(sector):
                 errors.append(f"Invalid exclude_sector: {sector}")
     
-    # SMAフィルタチェック
+    # SMA filter check
     if 'sma_filter' in params and params['sma_filter'] is not None:
         valid_sma_filters = ['above_sma20', 'above_sma50', 'above_sma200', 
                             'below_sma20', 'below_sma50', 'below_sma200', 'none']
         if params['sma_filter'] not in valid_sma_filters:
             errors.append(f"Invalid sma_filter: {params['sma_filter']}")
     
-    # ソート基準チェック
+    # Sort criteria check
     if 'sort_by' in params and params['sort_by'] is not None:
         valid_sort_options = [
             'ticker', 'company', 'sector', 'industry', 'country',
@@ -354,18 +354,18 @@ def validate_screening_params(params: Dict[str, Any]) -> List[str]:
         if params['sort_by'] not in valid_sort_options:
             errors.append(f"Invalid sort_by: {params['sort_by']}")
     
-    # ソート順序チェック
+    # Sort order check
     if 'sort_order' in params and params['sort_order'] is not None:
         if params['sort_order'] not in ['asc', 'desc']:
             errors.append(f"Invalid sort_order: {params['sort_order']}")
     
-    # 最大結果数チェック
+    # Maximum results count check
     if 'max_results' in params and params['max_results'] is not None:
         max_results = params['max_results']
         if not isinstance(max_results, int) or max_results <= 0 or max_results > 10000:
             errors.append(f"Invalid max_results: {max_results} (must be 1-10000)")
     
-    # ビューチェック
+    # View check
     if 'view' in params and params['view'] is not None:
         valid_views = ['111', '121', '131', '141', '151', '161', '171']
         if params['view'] not in valid_views:
@@ -375,19 +375,19 @@ def validate_screening_params(params: Dict[str, Any]) -> List[str]:
 
 def validate_data_fields(fields: List[str]) -> List[str]:
     """
-    データフィールドの妥当性をチェック（完全版）
+    Check validity of data fields (complete version)
     
     Args:
-        fields: データフィールドのリスト
+        fields: List of data fields
         
     Returns:
-        無効なフィールドのリスト
+        List of invalid fields
     """
-    # constants.pyのFINVIZ_COMPREHENSIVE_FIELD_MAPPINGから動的に有効フィールドを取得
+    # Dynamically get valid fields from FINVIZ_COMPREHENSIVE_FIELD_MAPPING in constants.py
     try:
         from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
     except ImportError:
-        # 直接実行時の場合
+        # When run directly
         import sys
         import os
         sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -395,28 +395,28 @@ def validate_data_fields(fields: List[str]) -> List[str]:
     
     valid_fields = set(FINVIZ_COMPREHENSIVE_FIELD_MAPPING.keys())
     
-    # 追加の有効フィールド（後方互換性のため）
+    # Additional valid fields (for backward compatibility)
     additional_valid_fields = {
-        # エラーで報告されたフィールド名の代替名
+        # Alternative field names reported in errors
         'eps_growth_this_y', 'eps_growth_next_y', 'eps_growth_next_5y',
         'eps_growth_past_5y', 'sales_growth_qtr', 'eps_growth_qtr', 
         'sales_growth_qoq', 'performance_1w', 'performance_1m',
         'recommendation', 'analyst_recommendation',
         'insider_own', 'institutional_own', 'insider_ownership', 'institutional_ownership',
         
-        # エラーで報告された無効フィールド名の正しい代替名
-        'roi',  # roic (Return on Invested Capital) の代替名
-        'debt_equity',  # debt_to_equity の代替名
-        'book_value',  # book_value_per_share の代替名
-        'performance_week',  # performance_1w の代替名
-        'performance_month',  # performance_1m の代替名
-        'short_float',  # float_short の代替名
+        # Correct alternative names for invalid field names reported in errors
+        'roi',  # Alternative name for roic (Return on Invested Capital)
+        'debt_equity',  # Alternative name for debt_to_equity
+        'book_value',  # Alternative name for book_value_per_share
+        'performance_week',  # Alternative name for performance_1w
+        'performance_month',  # Alternative name for performance_1m
+        'short_float',  # Alternative name for float_short
         
-        # その他の代替フィールド名
-        'profit_margin',  # profit_marginのエイリアス
-        'all',  # 全フィールド取得用の特別キー
+        # Other alternative field names
+        'profit_margin',  # Alias for profit_margin
+        'all',  # Special key for retrieving all fields
         
-        # 実際に取得されているFinvizフィールド名（104フィールド）
+        # Finviz field names actually retrieved (104 fields)
         '200_day_simple_moving_average', '20_day_simple_moving_average', '50_day_high', 
         '50_day_low', '50_day_simple_moving_average', '52_week_high', '52_week_low', 
         'after_hours_change', 'after_hours_close', 'all_time_high', 'all_time_low', 
@@ -449,146 +449,146 @@ def validate_data_fields(fields: List[str]) -> List[str]:
 
 def validate_exchange(exchange: str) -> bool:
     """
-    取引所フィルタの妥当性をチェック
+    Check validity of exchange filter
     
     Args:
-        exchange: 取引所コード
+        exchange: Exchange code
         
     Returns:
-        有効な取引所コードかどうか
+        Whether the exchange code is valid
     """
     return exchange in ALL_PARAMETERS['exch']
 
 def validate_index(index: str) -> bool:
     """
-    指数フィルタの妥当性をチェック
+    Check validity of index filter
     
     Args:
-        index: 指数コード
+        index: Index code
         
     Returns:
-        有効な指数コードかどうか
+        Whether the index code is valid
     """
     return index in ALL_PARAMETERS['idx']
 
 def validate_industry(industry: str) -> bool:
     """
-    業界フィルタの妥当性をチェック
+    Check validity of industry filter
     
     Args:
-        industry: 業界コード
+        industry: Industry code
         
     Returns:
-        有効な業界コードかどうか
+        Whether the industry code is valid
     """
     return industry in ALL_PARAMETERS['ind']
 
 def validate_country(country: str) -> bool:
     """
-    国フィルタの妥当性をチェック
+    Check validity of country filter
     
     Args:
-        country: 国コード
+        country: Country code
         
     Returns:
-        有効な国コードかどうか
+        Whether the country code is valid
     """
     return country in ALL_PARAMETERS['geo']
 
 def validate_price_filter(price: str) -> bool:
     """
-    価格フィルタの妥当性をチェック
+    Check validity of price filter
     
     Args:
-        price: 価格フィルタ
+        price: Price filter
         
     Returns:
-        有効な価格フィルタかどうか
+        Whether the price filter is valid
     """
     return price in ALL_PARAMETERS['sh_price']
 
 def validate_target_price(target_price: str) -> bool:
     """
-    目標価格フィルタの妥当性をチェック
+    Check validity of target price filter
     
     Args:
-        target_price: 目標価格フィルタ
+        target_price: Target price filter
         
     Returns:
-        有効な目標価格フィルタかどうか
+        Whether the target price filter is valid
     """
     return target_price in ALL_PARAMETERS['targetprice']
 
 def validate_dividend_yield_filter(dividend_yield: str) -> bool:
     """
-    配当利回りフィルタの妥当性をチェック
+    Check validity of dividend yield filter
     
     Args:
-        dividend_yield: 配当利回りフィルタ
+        dividend_yield: Dividend yield filter
         
     Returns:
-        有効な配当利回りフィルタかどうか
+        Whether the dividend yield filter is valid
     """
     return dividend_yield in ALL_PARAMETERS['fa_div']
 
 def validate_short_float(short_float: str) -> bool:
     """
-    ショート比率フィルタの妥当性をチェック
+    Check validity of short ratio filter
     
     Args:
-        short_float: ショート比率フィルタ
+        short_float: Short float filter
         
     Returns:
-        有効なショート比率フィルタかどうか
+        Whether the short ratio filter is valid
     """
     return short_float in ALL_PARAMETERS['sh_short']
 
 def validate_analyst_recommendation(analyst_rec: str) -> bool:
     """
-    アナリスト推奨フィルタの妥当性をチェック
+    Check validity of analyst recommendation filter
     
     Args:
-        analyst_rec: アナリスト推奨フィルタ
+        analyst_rec: Analyst recommendation filter
         
     Returns:
-        有効なアナリスト推奨フィルタかどうか
+        Whether the analyst recommendation filter is valid
     """
     return analyst_rec in ALL_PARAMETERS['an_recom']
 
 def validate_option_short(option_short: str) -> bool:
     """
-    オプション/ショートフィルタの妥当性をチェック
+    Check validity of option/short filter
     
     Args:
-        option_short: オプション/ショートフィルタ
+        option_short: Option/short filter
         
     Returns:
-        有効なオプション/ショートフィルタかどうか
+        Whether the option/short filter is valid
     """
     return option_short in ALL_PARAMETERS['sh_opt']
 
 def validate_ipo_date(ipo_date: str) -> bool:
     """
-    IPO日フィルタの妥当性をチェック
+    Check validity of IPO date filter
     
     Args:
-        ipo_date: IPO日フィルタ
+        ipo_date: IPO date filter
         
     Returns:
-        有効なIPO日フィルタかどうか
+        Whether the IPO date filter is valid
     """
     return ipo_date in ALL_PARAMETERS['ipodate']
 
 def validate_volume_filter(volume_type: str, volume_filter: str) -> bool:
     """
-    出来高関連フィルタの妥当性をチェック
+    Check validity of volume-related filters
     
     Args:
-        volume_type: 出来高タイプ ('sh_avgvol', 'sh_relvol', 'sh_curvol', 'sh_trades')
-        volume_filter: 出来高フィルタ
+        volume_type: Volume type ('sh_avgvol', 'sh_relvol', 'sh_curvol', 'sh_trades')
+        volume_filter: Volume filter
         
     Returns:
-        有効な出来高フィルタかどうか
+        Whether the volume filter is valid
     """
     if volume_type in ALL_PARAMETERS:
         return volume_filter in ALL_PARAMETERS[volume_type]
@@ -596,14 +596,14 @@ def validate_volume_filter(volume_type: str, volume_filter: str) -> bool:
 
 def validate_shares_filter(shares_type: str, shares_filter: str) -> bool:
     """
-    株式数関連フィルタの妥当性をチェック
+    Check validity of shares-related filters
     
     Args:
-        shares_type: 株式数タイプ ('sh_outstanding', 'sh_float')
-        shares_filter: 株式数フィルタ
+        shares_type: Shares type ('sh_outstanding', 'sh_float')
+        shares_filter: Shares filter
         
     Returns:
-        有効な株式数フィルタかどうか
+        Whether the shares filter is valid
     """
     if shares_type in ALL_PARAMETERS:
         return shares_filter in ALL_PARAMETERS[shares_type]
@@ -611,17 +611,17 @@ def validate_shares_filter(shares_type: str, shares_filter: str) -> bool:
 
 def validate_custom_range(param_name: str, min_val: Optional[float], max_val: Optional[float]) -> bool:
     """
-    カスタム範囲パラメータの妥当性をチェック
+    Check validity of custom range parameter
     
     Args:
-        param_name: パラメータ名
-        min_val: 最小値
-        max_val: 最大値
+        param_name: Parameter name
+        min_val: Minimum value
+        max_val: Maximum value
         
     Returns:
-        有効なカスタム範囲かどうか
+        Whether the custom range is valid
     """
-    # 数値パラメータの場合のみ検証
+    # Validate only for numeric parameters
     numeric_params = {
         'price', 'market_cap', 'pe', 'forward_pe', 'peg', 'ps', 'pb',
         'debt_equity', 'roe', 'roi', 'roa', 'dividend_yield',
@@ -638,42 +638,42 @@ def validate_custom_range(param_name: str, min_val: Optional[float], max_val: Op
 
 def get_all_valid_values() -> Dict[str, List[str]]:
     """
-    すべての有効なパラメータ値を取得
+    Get all valid parameter values
     
     Returns:
-        パラメータ名と有効値の辞書
+        Dictionary of parameter names and valid values
     """
     return {param: list(values.keys()) for param, values in ALL_PARAMETERS.items()}
 
 def validate_parameter_combination(params: Dict[str, Any]) -> List[str]:
     """
-    パラメータの組み合わせの妥当性をチェック
+    Check validity of parameter combinations
     
     Args:
-        params: パラメータ辞書
+        params: Parameter dictionary
         
     Returns:
-        組み合わせエラーのリスト
+        List of combination errors
     """
     errors = []
     
-    # ETFと株式の排他的な組み合わせチェック
+    # Check exclusive combination of ETF and stocks
     if params.get('exclude_etfs') and params.get('only_etfs'):
         errors.append("Cannot exclude and include ETFs simultaneously")
     
-    # 価格範囲の組み合わせチェック
+    # Price range combination check
     price_filters = ['price', 'price_min', 'price_max']
     price_count = sum(1 for p in price_filters if p in params and params[p] is not None)
     if price_count > 1:
         errors.append("Use either price filter OR price_min/max, not both")
     
-    # 出来高範囲の組み合わせチェック
+    # Volume range combination check
     volume_filters = ['average_volume', 'avg_volume_min', 'volume_min']
     volume_count = sum(1 for v in volume_filters if v in params and params[v] is not None)
     if volume_count > 1:
         errors.append("Use either volume filter OR volume_min, not both")
     
-    # 相対出来高範囲の組み合わせチェック
+    # Relative volume range combination check
     rel_volume_filters = ['relative_volume', 'relative_volume_min']
     rel_volume_count = sum(1 for rv in rel_volume_filters if rv in params and params[rv] is not None)
     if rel_volume_count > 1:
@@ -683,16 +683,16 @@ def validate_parameter_combination(params: Dict[str, Any]) -> List[str]:
 
 def sanitize_input(value: Any) -> Any:
     """
-    入力値をサニタイズ
+    Sanitize input value
     
     Args:
-        value: 入力値
+        value: Input value
         
     Returns:
-        サニタイズされた値
+        Sanitized value
     """
     if isinstance(value, str):
-        # SQLインジェクションやXSS攻撃を防ぐための基本的なサニタイゼーション
+        # Basic sanitization to prevent SQL injection and XSS attacks
         dangerous_chars = ['<', '>', '"', "'", '&', ';', '(', ')', '|', '`']
         for char in dangerous_chars:
             value = value.replace(char, '')

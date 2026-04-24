@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-全機能の包括的テストランナー
-型エラーやカラム名エラーの詳細検出
+Comprehensive test runner for all features
+Detailed detection of type and column-name errors
 """
 
 import sys
@@ -12,7 +12,7 @@ import traceback
 from typing import List, Dict, Any, Optional, Tuple
 from unittest.mock import patch, Mock
 
-# プロジェクトルートをパスに追加
+# 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
@@ -25,21 +25,21 @@ from src.finviz_client.sector_analysis import FinvizSectorAnalysisClient
 from src.finviz_client.sec_filings import FinvizSECFilingsClient
 
 class ComprehensiveTestRunner:
-    """包括的テストランナー"""
+    """comprehensivetest"""
 
     def __init__(self):
-        """初期化"""
+        """initialize"""
         self.results = []
         self.failed_tests = []
         self.total_tests = 0
         self.passed_tests = 0
         
-        # テスト用サンプルデータ
+        # test
         self.sample_stock_data = self._create_sample_stock_data()
         self.sample_stocks_list = [self.sample_stock_data, self._create_msft_sample()]
 
     def _create_sample_stock_data(self) -> StockData:
-        """完全なStockDataサンプルを作成"""
+        """completeStockData"""
         return StockData(
             ticker="AAPL",
             company_name="Apple Inc.",
@@ -90,7 +90,7 @@ class ComprehensiveTestRunner:
         )
 
     def _create_msft_sample(self) -> StockData:
-        """MSFTのサンプルデータ"""
+        """MSFT"""
         return StockData(
             ticker="MSFT",
             company_name="Microsoft Corporation",
@@ -111,7 +111,7 @@ class ComprehensiveTestRunner:
         )
 
     def log_test_result(self, test_name: str, success: bool, error_message: str = None):
-        """テスト結果をログ"""
+        """testresults"""
         self.total_tests += 1
         if success:
             self.passed_tests += 1
@@ -120,13 +120,13 @@ class ComprehensiveTestRunner:
             self.failed_tests.append((test_name, error_message))
             print(f"✗ {test_name}")
             if error_message:
-                print(f"  エラー: {error_message}")
+                print(f"  error: {error_message}")
 
     async def test_all_screeners(self):
-        """全スクリーナーのテスト"""
-        print("\n=== スクリーナー機能テスト ===")
+        """test"""
+        print("\n=== test ===")
         
-        # 決算関連スクリーナー
+        # earningsrelated
         screener_tests = [
             {
                 "name": "earnings_screener",
@@ -138,7 +138,7 @@ class ComprehensiveTestRunner:
                 "name": "volume_surge_screener", 
                 "params": {"random_string": "test"},
                 "mock_method": "volume_surge_screener",
-                "expected_content": ["固定フィルタ条件", "出来高急増"]
+                "expected_content": ["fixed filter conditions", "volumesurge"]
             },
             {
                 "name": "earnings_trading_screener",
@@ -158,26 +158,26 @@ class ComprehensiveTestRunner:
                     if result and len(result) > 0:
                         result_text = str(result[0].text)
                         
-                        # 期待するコンテンツが含まれているかチェック
+                        # 
                         content_found = any(content in result_text for content in test["expected_content"])
                         
                         if content_found:
-                            self.log_test_result(f"{test['name']} - コンテンツチェック", True)
+                            self.log_test_result(f"{test['name']} - ", True)
                         else:
-                            self.log_test_result(f"{test['name']} - コンテンツチェック", False, 
-                                               f"期待するコンテンツが見つかりません: {test['expected_content']}")
+                            self.log_test_result(f"{test['name']} - ", False, 
+                                               f": {test['expected_content']}")
                         
-                        # 属性アクセスエラーをチェック
+                        # attributeaccesserror
                         self._check_attribute_access_in_result(test["name"], result_text)
                         
                     else:
-                        self.log_test_result(f"{test['name']} - 結果取得", False, "結果がNullまたは空")
+                        self.log_test_result(f"{test['name']} - resultsfetch", False, "resultsNull")
                         
             except Exception as e:
-                self.log_test_result(f"{test['name']} - 実行", False, f"{str(e)}\n{traceback.format_exc()}")
+                self.log_test_result(f"{test['name']} - run", False, f"{str(e)}\n{traceback.format_exc()}")
 
     def _check_attribute_access_in_result(self, function_name: str, result_text: str):
-        """結果テキストから属性アクセスエラーを検出"""
+        """resultsattributeaccesserrordetect"""
         error_indicators = [
             "AttributeError", 
             "KeyError",
@@ -191,50 +191,50 @@ class ComprehensiveTestRunner:
         
         for indicator in error_indicators:
             if indicator in result_text:
-                self.log_test_result(f"{function_name} - 属性アクセス", False, 
-                                   f"属性アクセスエラー検出: {indicator}")
+                self.log_test_result(f"{function_name} - attributeaccess", False, 
+                                   f"attributeaccesserrordetect: {indicator}")
                 return
         
-        self.log_test_result(f"{function_name} - 属性アクセス", True)
+        self.log_test_result(f"{function_name} - attributeaccess", True)
 
     async def run_all_tests(self):
-        """全テストの実行"""
-        print("=== Finviz MCP Server 包括的テスト開始 ===")
+        """testrun"""
+        print("=== Finviz MCP Server comprehensiveteststart ===")
         start_time = time.time()
         
-        # 各テストカテゴリの実行
+        # testcategoryrun
         await self.test_all_screeners()
         
-        # 結果の集計と表示
+        # results
         end_time = time.time()
         execution_time = end_time - start_time
         
-        print(f"\n=== テスト結果サマリー ===")
-        print(f"総テスト数: {self.total_tests}")
-        print(f"成功: {self.passed_tests}")
-        print(f"失敗: {len(self.failed_tests)}")
-        print(f"成功率: {(self.passed_tests / self.total_tests * 100):.1f}%")
-        print(f"実行時間: {execution_time:.2f}秒")
+        print(f"\n=== testresultssummary ===")
+        print(f"test: {self.total_tests}")
+        print(f"success: {self.passed_tests}")
+        print(f"failed: {len(self.failed_tests)}")
+        print(f"success: {(self.passed_tests / self.total_tests * 100):.1f}%")
+        print(f"runtime: {execution_time:.2f}s")
         
         if self.failed_tests:
-            print(f"\n=== 失敗したテスト詳細 ===")
+            print(f"\n=== failedtestdetails ===")
             for test_name, error_message in self.failed_tests:
                 print(f"\n❌ {test_name}")
                 if error_message:
-                    print(f"   エラー: {error_message}")
+                    print(f"   error: {error_message}")
         
         return len(self.failed_tests) == 0
 
 async def main():
-    """メイン実行関数"""
+    """mainrunfunction"""
     runner = ComprehensiveTestRunner()
     success = await runner.run_all_tests()
     
     if success:
-        print("\n🎉 全テストが成功しました！")
+        print("\n🎉 testsuccess")
         return 0
     else:
-        print("\n❌ テストに失敗がありました。上記の詳細を確認してください。")
+        print("\n❌ testfailed。detailscheck。")
         return 1
 
 if __name__ == "__main__":

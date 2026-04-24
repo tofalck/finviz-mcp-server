@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-Finviz カスタム範囲解析 - クイックスタート
+Finviz custom range analysis - quick start
 
-最も簡単な実行方法：
+run:
   python quick_range_analyze.py
 
-もしくは：
+:
   cd scripts && python quick_range_analyze.py
 """
 
@@ -14,10 +14,10 @@ import sys
 from pathlib import Path
 
 def main():
-    print("🎯 Finviz カスタム範囲解析 - クイックスタート")
+    print("🎯 Finviz custom range analysis - quick start")
     print("="*60)
     
-    # HTMLファイルの自動検索
+    # HTMLfile
     possible_paths = [
         '../docs/finviz_screen_page.html',
         'docs/finviz_screen_page.html',
@@ -28,61 +28,61 @@ def main():
     for path in possible_paths:
         if os.path.exists(path):
             html_file = path
-            print(f"✅ HTMLファイルを発見: {path}")
+            print(f"✅ HTMLfile: {path}")
             break
     
     if not html_file:
-        print("❌ finviz_screen_page.html が見つかりません")
-        print("以下の場所を確認してください:")
+        print("❌ finviz_screen_page.html ")
+        print("or lesscheck:")
         for path in possible_paths:
             print(f"  - {path}")
         return 1
     
     try:
-        # finviz_range_analyzer.pyをインポート
+        # finviz_range_analyzer.pyimport
         from finviz_range_analyzer import FinvizRangeAnalyzer
         
-        print(f"📊 カスタム範囲解析を開始します...")
+        print(f"📊 customrangeanalysisstart...")
         
-        # 解析器を初期化して実行
+        # analysisinitializerun
         analyzer = FinvizRangeAnalyzer(html_file)
         success = analyzer.analyze_with_ranges(export_format='both')
         
         if success:
-            print("\n🎉 カスタム範囲解析が完了しました！")
+            print("\n🎉 customrangeanalysiscompleted")
             
-            # 出力ファイルの確認
+            # outputfilecheck
             stem = Path(html_file).stem
             output_files = [
                 f"finviz_range_analysis_{stem}.md",
                 f"finviz_range_analysis_{stem}.json"
             ]
             
-            print("\n📁 出力ファイル:")
+            print("\n📁 outputfile:")
             for file in output_files:
                 if os.path.exists(file):
                     size = os.path.getsize(file) / 1024
                     print(f"  ✅ {file} ({size:.1f} KB)")
                 else:
-                    print(f"  ❌ {file} (未作成)")
+                    print(f"  ❌ {file} ()")
             
-            print("\n💡 カスタム範囲URLの例:")
-            print("  🔗 sh_price_10to50 → 株価 $10-$50")
-            print("  🔗 cap_1to10 → 時価総額 $1B-$10B")
-            print("  🔗 fa_pe_10to20 → PER 10-20倍")
-            print("  🔗 fa_div_3to7 → 配当利回り 3-7%")
+            print("\n💡 customrangeURLexample:")
+            print("  🔗 sh_price_10to50 → stock price $10-$50")
+            print("  🔗 cap_1to10 → market cap $1B-$10B")
+            print("  🔗 fa_pe_10to20 → PER 10-20")
+            print("  🔗 fa_div_3to7 → dividend yield 3-7%")
             
             return 0
         else:
-            print("\n❌ カスタム範囲解析に失敗しました")
+            print("\n❌ customrangeanalysisfailed")
             return 1
             
     except ImportError as e:
-        print(f"❌ インポートエラー: {e}")
-        print("finviz_range_analyzer.py が同じディレクトリにあることを確認してください")
+        print(f"❌ importerror: {e}")
+        print("finviz_range_analyzer.py check")
         return 1
     except Exception as e:
-        print(f"❌ 予期しないエラー: {e}")
+        print(f"❌ unexpectederror: {e}")
         return 1
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # Finviz Screening Parameters Constants
 # This file contains all valid parameter values for Finviz screening
 
-# Exchange (取引所) - exch
+# Exchange - exch
 EXCHANGE_VALUES = {
     '': 'Any',
     'amex': 'AMEX',
@@ -11,7 +11,7 @@ EXCHANGE_VALUES = {
     'modal': 'Custom'
 }
 
-# Index (指数) - idx
+# Index - idx
 INDEX_VALUES = {
     '': 'Any',
     'sp500': 'S&P 500',
@@ -21,7 +21,7 @@ INDEX_VALUES = {
     'modal': 'Custom'
 }
 
-# Sector (セクター) - sec
+# Sector - sec
 SECTOR_VALUES = {
     '': 'Any',
     'basicmaterials': 'Basic Materials',
@@ -38,7 +38,7 @@ SECTOR_VALUES = {
     'modal': 'Custom'
 }
 
-# Industry (業界) - ind
+# Industry - ind
 INDUSTRY_VALUES = {
     '': 'Any',
     'stocksonly': 'Stocks only (ex-Funds)',
@@ -194,7 +194,7 @@ INDUSTRY_VALUES = {
     'modal': 'Custom'
 }
 
-# Country (国) - geo
+# Country - geo
 COUNTRY_VALUES = {
     '': 'Any',
     'usa': 'USA',
@@ -262,7 +262,7 @@ COUNTRY_VALUES = {
     'modal': 'Custom'
 }
 
-# Market Capitalization (時価総額) - cap
+# Market Capitalization - cap
 MARKET_CAP_VALUES = {
     '': 'Any',
     'mega': 'Mega ($200bln and more)',
@@ -282,7 +282,7 @@ MARKET_CAP_VALUES = {
     'frange': 'Custom'
 }
 
-# Price (株価) - sh_price
+# Price - sh_price
 PRICE_VALUES = {
     '': 'Any',
     'u1': 'Under $1',
@@ -327,7 +327,7 @@ PRICE_VALUES = {
     'frange': 'Custom'
 }
 
-# Target Price (目標価格) - targetprice
+# Target Price - targetprice
 TARGET_PRICE_VALUES = {
     '': 'Any',
     'a50': '50% Above Price',
@@ -347,7 +347,7 @@ TARGET_PRICE_VALUES = {
     'modal': 'Custom'
 }
 
-# Dividend Yield (配当利回り) - fa_div
+# Dividend Yield - fa_div
 DIVIDEND_YIELD_VALUES = {
     '': 'Any',
     'none': 'None (0%)',
@@ -367,7 +367,7 @@ DIVIDEND_YIELD_VALUES = {
     'frange': 'Custom'
 }
 
-# Short Float (ショート比率) - sh_short
+# Short Float - sh_short
 SHORT_FLOAT_VALUES = {
     '': 'Any',
     'low': 'Low (<5%)',
@@ -387,7 +387,7 @@ SHORT_FLOAT_VALUES = {
     'frange': 'Custom'
 }
 
-# Analyst Recommendation (アナリスト推奨) - an_recom
+# Analyst Recommendation - an_recom
 ANALYST_RECOMMENDATION_VALUES = {
     '': 'Any',
     'strongbuy': 'Strong Buy (1)',
@@ -402,7 +402,7 @@ ANALYST_RECOMMENDATION_VALUES = {
     'modal': 'Custom'
 }
 
-# Option/Short (オプション/ショート) - sh_opt
+# Option/Short - sh_opt
 OPTION_SHORT_VALUES = {
     '': 'Any',
     'option': 'Optionable',
@@ -428,7 +428,7 @@ OPTION_SHORT_VALUES = {
     'modal': 'Custom'
 }
 
-# Earnings Date (決算日) - earningsdate
+# Earnings Date - earningsdate
 EARNINGS_DATE_VALUES = {
     '': 'Any',
     'today': 'Today',
@@ -449,7 +449,7 @@ EARNINGS_DATE_VALUES = {
     'modal': 'Custom'
 }
 
-# IPO Date (IPO日) - ipodate
+# IPO Date - ipodate
 IPO_DATE_VALUES = {
     '': 'Any',
     'today': 'Today',
@@ -470,7 +470,7 @@ IPO_DATE_VALUES = {
     'modal': 'Custom'
 }
 
-# Average Volume (平均出来高) - sh_avgvol
+# Average Volume - sh_avgvol
 AVERAGE_VOLUME_VALUES = {
     '': 'Any',
     'u50': 'Under 50K',
@@ -494,7 +494,7 @@ AVERAGE_VOLUME_VALUES = {
     'frange': 'Custom'
 }
 
-# Relative Volume (相対出来高) - sh_relvol
+# Relative Volume - sh_relvol
 RELATIVE_VOLUME_VALUES = {
     '': 'Any',
     'o10': 'Over 10',
@@ -516,7 +516,7 @@ RELATIVE_VOLUME_VALUES = {
     'frange': 'Custom'
 }
 
-# Current Volume (当日出来高) - sh_curvol
+# Current Volume - sh_curvol
 CURRENT_VOLUME_VALUES = {
     '': 'Any',
     'u50': 'Under 50K',
@@ -550,7 +550,7 @@ CURRENT_VOLUME_VALUES = {
     'modal': 'Custom'
 }
 
-# Trades (取引回数) - sh_trades
+# Trades - sh_trades
 TRADES_VALUES = {
     '': 'Any',
     'u100': 'Under 100',
@@ -571,7 +571,7 @@ TRADES_VALUES = {
     'frange': 'Custom'
 }
 
-# Shares Outstanding (発行済株式数) - sh_outstanding
+# Shares Outstanding - sh_outstanding
 SHARES_OUTSTANDING_VALUES = {
     '': 'Any',
     'u1': 'Under 1M',
@@ -593,7 +593,7 @@ SHARES_OUTSTANDING_VALUES = {
     'frange': 'Custom'
 }
 
-# Float (浮動株数) - sh_float
+# Float - sh_float
 FLOAT_VALUES = {
     '': 'Any',
     'u1': 'Under 1M',
@@ -660,9 +660,9 @@ ALL_PARAMETERS = {
 # Legacy mappings for backward compatibility
 MARKET_CAP_FILTERS = list(MARKET_CAP_VALUES.keys())
 
-# Finvizの包括的フィールドマッピング定数（カラム番号対応）
+# Comprehensive Finviz field mapping constants (with column number reference)
 FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
-    # 基本情報 (0-9)
+    # Basic information (0-9)
     'no': {'csv_name': 'No.', 'column_id': 0},
     'ticker': {'csv_name': 'Ticker', 'column_id': 1},
     'company': {'csv_name': 'Company', 'column_id': 2},
@@ -674,7 +674,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'pe_ratio': {'csv_name': 'P/E', 'column_id': 8},
     'forward_pe': {'csv_name': 'Forward P/E', 'column_id': 9},
     
-    # バリュエーション指標 (10-19)
+    # Valuation metrics (10-19)
     'peg': {'csv_name': 'PEG', 'column_id': 10},
     'ps_ratio': {'csv_name': 'P/S', 'column_id': 11},
     'pb_ratio': {'csv_name': 'P/B', 'column_id': 12},
@@ -686,7 +686,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'dividend_yield': {'csv_name': 'Dividend Yield', 'column_id': 18},
     'payout_ratio': {'csv_name': 'Payout Ratio', 'column_id': 19},
     
-    # 収益性指標 (20-29)
+    # Profitability metrics (20-29)
     'eps': {'csv_name': 'EPS (ttm)', 'column_id': 20},
     'eps_next_q': {'csv_name': 'EPS Next Q', 'column_id': 21},
     'eps_growth_this_y': {'csv_name': 'EPS Growth This Year', 'column_id': 22},
@@ -698,7 +698,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'eps_growth_qtr': {'csv_name': 'EPS Growth Quarter Over Quarter', 'column_id': 28},
     'sales': {'csv_name': 'Sales', 'column_id': 29},
     
-    # 財務・決算関連 (30-39)
+    # Financial & earnings data (30-39)
     'income': {'csv_name': 'Income', 'column_id': 30},
     'eps_surprise': {'csv_name': 'EPS Surprise', 'column_id': 31},
     'revenue_surprise': {'csv_name': 'Revenue Surprise', 'column_id': 32},
@@ -710,7 +710,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'institutional_ownership': {'csv_name': 'Institutional Ownership', 'column_id': 38},
     'institutional_transactions': {'csv_name': 'Institutional Transactions', 'column_id': 39},
     
-    # 空売り関連 (40-49)
+    # Short selling data (40-49)
     'float_short': {'csv_name': 'Short Float', 'column_id': 40},
     'short_ratio': {'csv_name': 'Short Ratio', 'column_id': 41},
     'short_interest': {'csv_name': 'Short Interest', 'column_id': 42},
@@ -722,7 +722,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'lt_debt_to_equity': {'csv_name': 'LT Debt/Equity', 'column_id': 48},
     'debt_to_equity': {'csv_name': 'Total Debt/Equity', 'column_id': 49},
     
-    # 収益性マージン (50-59)
+    # Profitability margins (50-59)
     'gross_margin': {'csv_name': 'Gross Margin', 'column_id': 50},
     'operating_margin': {'csv_name': 'Operating Margin', 'column_id': 51},
     'profit_margin': {'csv_name': 'Profit Margin', 'column_id': 52},
@@ -734,7 +734,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'performance_15min': {'csv_name': 'Performance (15 Minutes)', 'column_id': 58},
     'performance_30min': {'csv_name': 'Performance (30 Minutes)', 'column_id': 59},
     
-    # パフォーマンス（時間単位〜長期） (60-69)
+    # Performance (intraday to long-term) (60-69)
     'performance_1h': {'csv_name': 'Performance (1 Hour)', 'column_id': 60},
     'performance_2h': {'csv_name': 'Performance (2 Hours)', 'column_id': 61},
     'performance_4h': {'csv_name': 'Performance (4 Hours)', 'column_id': 62},
@@ -746,7 +746,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'performance_ytd': {'csv_name': 'Performance (YTD)', 'column_id': 68},
     'beta': {'csv_name': 'Beta', 'column_id': 69},
     
-    # テクニカル指標 (70-79)
+    # Technical indicators (70-79)
     'avg_true_range': {'csv_name': 'Average True Range', 'column_id': 70},
     'volatility_week': {'csv_name': 'Volatility (Week)', 'column_id': 71},
     'volatility_month': {'csv_name': 'Volatility (Month)', 'column_id': 72},
@@ -758,7 +758,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'week_52_high': {'csv_name': '52-Week High', 'column_id': 78},
     'week_52_low': {'csv_name': '52-Week Low', 'column_id': 79},
     
-    # 株式・取引情報 (80-89)
+    # Stock & trading information (80-89)
     'optionable': {'csv_name': 'Optionable', 'column_id': 80},
     'shortable': {'csv_name': 'Shortable', 'column_id': 81},
     'employees': {'csv_name': 'Employees', 'column_id': 82},
@@ -770,7 +770,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'volume': {'csv_name': 'Volume', 'column_id': 88},
     'trades_count': {'csv_name': 'Trades', 'column_id': 89},
     
-    # 価格情報 (90-99)
+    # Price information (90-99)
     'target_price': {'csv_name': 'Target Price', 'column_id': 90},
     'prev_close': {'csv_name': 'Prev Close', 'column_id': 91},
     'open_price': {'csv_name': 'Open', 'column_id': 92},
@@ -782,7 +782,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'afterhours_change': {'csv_name': 'After-Hours Change', 'column_id': 98},
     'single_category': {'csv_name': 'Single Category', 'column_id': 99},
     
-    # ETF専用フィールド (100-109)
+    # ETF-specific fields (100-109)
     'asset_type': {'csv_name': 'Asset Type', 'column_id': 100},
     'etf_type': {'csv_name': 'ETF Type', 'column_id': 101},
     'sector_theme': {'csv_name': 'Sector/Theme', 'column_id': 102},
@@ -794,7 +794,7 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'nav': {'csv_name': 'Net Asset Value', 'column_id': 108},
     'all_time_high': {'csv_name': 'All-Time High', 'column_id': 109},
     
-    # ETF・その他追加フィールド (110-125)
+    # ETF & additional fields (110-125)
     'all_time_low': {'csv_name': 'All-Time Low', 'column_id': 110},
     'rsi': {'csv_name': 'Relative Strength Index (14)', 'column_id': 111},
     'earnings_date': {'csv_name': 'Earnings Date', 'column_id': 112},
@@ -815,5 +815,5 @@ FINVIZ_COMPREHENSIVE_FIELD_MAPPING = {
     'tags': {'csv_name': 'Tags', 'column_id': 127}
 }
 
-# 全カラムを取得するためのCSVエクスポートパラメータ（更新版）
+# CSV export parameter for all columns (updated)
 FINVIZ_ALL_COLUMNS_UPDATED = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127"
