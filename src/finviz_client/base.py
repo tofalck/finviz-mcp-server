@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import time
 import logging
+import json
 from typing import Dict, List, Optional, Any, Union
 from urllib.parse import urlencode
 
@@ -23,6 +24,7 @@ class FinvizClient:
     GROUPS_EXPORT_URL = f"{BASE_URL}/grp_export.ashx"
     NEWS_EXPORT_URL = f"{BASE_URL}/news_export.ashx"
     QUOTE_EXPORT_URL = f"{BASE_URL}/quote_export.ashx"
+    OPTIONS_EXPORT_URL = f"{BASE_URL}/export/options"
     
     def __init__(self, api_key: Optional[str] = None):
         """
@@ -1440,6 +1442,210 @@ class FinvizClient:
                         setattr(stock_data, field, str(value).lower() in ['yes', 'true', '1'])
         
         return stock_data
+
+    def get_option_chain(
+        self,
+        ticker: str,
+        expiry_start_date: Optional[str] = None,
+        expiry_end_date: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Get option chain via Finviz export/options endpoint.
+
+        Returns a normalized dict with keys: ticker, expiries_fetched,
+        all_expiries, options.
+        """
+        ticker = ticker.upper()
+
+        def _build_params(expiry_date: Optional[str] = None) -> Dict[str, Any]:
+            params: Dict[str, Any] = {
+                "t": ticker,
+                "ty": "oc",
+            }
+            if expiry_date:
+                params["e"] = expiry_date
+            api_key = self.api_key or os.getenv("FINVIZ_API_KEY")
+            if api_key:
+                params["auth"] = api_key
+            return params
+
+        def _as_float(value: Any) -> Optional[float]:
+            if value is None:
+                return None
+            if isinstance(value, (int, float)):
+                return float(value)
+            text = str(value).strip().replace(",", "")
+            if text in ("", "-", "N/A", "None"):
+                return None
+            if text.endswith("%"):
+                try:
+                    return float(text[:-1]) / 100.0
+                except ValueError:
+                    return None
+            try:
+                return float(text)
+            except ValueError:
+                return None
+
+        def _as_int(value: Any) -> Optional[int]:
+            number = _as_float(value)
+            if number is None:
+                return None
+            try:
+                return int(number)
+            except (ValueError, TypeError):
+                return None
+
+        def _norm_type(raw_type: Any) -> Optional[str]:
+            if raw_type is None:
+                return None
+            value = str(raw_type).strip().lower()
+            if value in ("c", "call", "calls"):
+                return "call"
+            if value in ("p", "put", "puts"):
+                return "put"
+            return value or None
+
+        def _normalize_option(raw: Dict[str, Any], fallback_expiry: Optional[str] = None) -> Dict[str, Any]:
+            expiry = raw.get("expiry") or raw.get("exDate") or raw.get("expiration") or fallback_expiry or ""
+            return {
+                "type": _norm_type(raw.get("type") or raw.get("optionType") or raw.get("side")),
+                "strike": _as_float(raw.get("strike") or raw.get("strikePrice")),
+                "expiry": str(expiry),
+                "bid": _as_float(raw.get("bid") or raw.get("bidPrice")),
+                "ask": _as_float(raw.get("ask") or raw.get("askPrice")),
+                "last": _as_float(raw.get("last") or raw.get("lastClose") or raw.get("lastPrice")),
+                "last_change": _as_float(raw.get("last_change") or raw.get("lastChange")),
+                "volume": _as_int(raw.get("volume") or raw.get("lastVolume")),
+                "open_interest": _as_int(raw.get("open_interest") or raw.get("openInterest")),
+                "avg_volume": _as_int(raw.get("avg_volume") or raw.get("averageVolume")),
+                "iv": _as_float(raw.get("iv") or raw.get("impliedVolatility")),
+                "delta": _as_float(raw.get("delta")),
+                "gamma": _as_float(raw.get("gamma")),
+                "theta": _as_float(raw.get("theta")),
+                "vega": _as_float(raw.get("vega")),
+                "rho": _as_float(raw.get("rho")),
+                "lambda": _as_float(raw.get("lambda")),
+                "last_time": raw.get("last_time") or raw.get("lastTime"),
+            }
+
+        def _extract_from_dataframe(df: pd.DataFrame, fallback_expiry: Optional[str] = None) -> Dict[str, Any]:
+            options: List[Dict[str, Any]] = []
+            expiries = set()
+            for _, row in df.iterrows():
+                raw = {
+                    "type": row.get("Type") if "Type" in df.columns else row.get("type"),
+                    "strike": row.get("Strike") if "Strike" in df.columns else row.get("strike"),
+                    "expiry": row.get("Expiry") if "Expiry" in df.columns else row.get("expiry"),
+                    "bid": row.get("Bid") if "Bid" in df.columns else row.get("bid"),
+                    "ask": row.get("Ask") if "Ask" in df.columns else row.get("ask"),
+                    "last": row.get("Last") if "Last" in df.columns else row.get("last"),
+                    "last_change": row.get("Change") if "Change" in df.columns else row.get("last_change"),
+                    "volume": row.get("Volume") if "Volume" in df.columns else row.get("volume"),
+                    "open_interest": row.get("Open Interest") if "Open Interest" in df.columns else row.get("open_interest"),
+                    "iv": row.get("IV") if "IV" in df.columns else row.get("iv"),
+                    "delta": row.get("Delta") if "Delta" in df.columns else row.get("delta"),
+                    "gamma": row.get("Gamma") if "Gamma" in df.columns else row.get("gamma"),
+                    "theta": row.get("Theta") if "Theta" in df.columns else row.get("theta"),
+                    "vega": row.get("Vega") if "Vega" in df.columns else row.get("vega"),
+                    "rho": row.get("Rho") if "Rho" in df.columns else row.get("rho"),
+                }
+                normalized = _normalize_option(raw, fallback_expiry)
+                if normalized.get("expiry"):
+                    expiries.add(normalized["expiry"])
+                options.append(normalized)
+
+            return {
+                "ticker": ticker,
+                "current_expiry": fallback_expiry,
+                "expiries": sorted(expiries),
+                "options": options,
+            }
+
+        def _parse_payload(text: str, fallback_expiry: Optional[str] = None) -> Dict[str, Any]:
+            loaded: Any
+            try:
+                loaded = json.loads(text)
+            except json.JSONDecodeError:
+                loaded = None
+
+            if isinstance(loaded, dict):
+                payload_options = loaded.get("options") or loaded.get("data") or loaded.get("contracts") or []
+                return {
+                    "ticker": loaded.get("ticker", ticker),
+                    "current_expiry": loaded.get("currentExpiry") or loaded.get("current_expiry") or loaded.get("expiry") or fallback_expiry,
+                    "expiries": [str(e) for e in (loaded.get("expiries") or loaded.get("expirations") or loaded.get("all_expiries") or []) if e],
+                    "options": [
+                        _normalize_option(item, fallback_expiry)
+                        for item in payload_options
+                        if isinstance(item, dict)
+                    ],
+                }
+
+            if isinstance(loaded, list):
+                return {
+                    "ticker": ticker,
+                    "current_expiry": fallback_expiry,
+                    "expiries": [fallback_expiry] if fallback_expiry else [],
+                    "options": [
+                        _normalize_option(item, fallback_expiry)
+                        for item in loaded
+                        if isinstance(item, dict)
+                    ],
+                }
+
+            # CSV fallback
+            from io import StringIO
+            df = pd.read_csv(StringIO(text))
+            return _extract_from_dataframe(df, fallback_expiry)
+
+        def _fetch(expiry_date: Optional[str] = None) -> Dict[str, Any]:
+            response = self._make_request(self.OPTIONS_EXPORT_URL, _build_params(expiry_date))
+            return _parse_payload(response.text, expiry_date)
+
+        try:
+            default_data = _fetch()
+            all_expiries = sorted(default_data.get("expiries", []))
+
+            if not expiry_start_date:
+                current_expiry = default_data.get("current_expiry")
+                options = default_data.get("options", [])
+                if current_expiry:
+                    filtered = [o for o in options if o.get("expiry") in ("", None, current_expiry)]
+                    options = filtered if filtered else options
+                return {
+                    "ticker": default_data.get("ticker", ticker),
+                    "expiries_fetched": [current_expiry] if current_expiry else [],
+                    "all_expiries": all_expiries,
+                    "options": options,
+                }
+
+            candidates = [e for e in all_expiries if e >= expiry_start_date]
+            if expiry_end_date:
+                candidates = [e for e in candidates if e <= expiry_end_date]
+
+            if not candidates:
+                return {
+                    "ticker": default_data.get("ticker", ticker),
+                    "expiries_fetched": [],
+                    "all_expiries": all_expiries,
+                    "options": [],
+                }
+
+            aggregated: List[Dict[str, Any]] = []
+            default_expiry = default_data.get("current_expiry")
+            for exp in candidates:
+                exp_data = default_data if exp == default_expiry else _fetch(exp)
+                aggregated.extend(exp_data.get("options", []))
+
+            return {
+                "ticker": default_data.get("ticker", ticker),
+                "expiries_fetched": candidates,
+                "all_expiries": all_expiries,
+                "options": aggregated,
+            }
+        except Exception as e:
+            logger.error(f"Error fetching option chain for {ticker}: {e}")
+            raise
     
     def _fetch_csv_from_url(self, export_url: str, params: Dict[str, Any] = None) -> pd.DataFrame:
         """

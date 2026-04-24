@@ -1980,6 +1980,101 @@ def technical_analysis_screener(
         logger.error(f"Error in technical_analysis_screener: {str(e)}")
         return [TextContent(type="text", text=f"Error: {str(e)}")]
 
+@server.tool()
+def get_option_chain(
+    ticker: str,
+    expiry_start_date: Optional[str] = None,
+    expiry_end_date: Optional[str] = None,
+) -> List[TextContent]:
+    """Get option chain data (calls and puts) for a stock from Finviz."""
+    try:
+        if not validate_ticker(ticker):
+            raise ValueError(f"Invalid ticker: {ticker}")
+
+        data = finviz_client.get_option_chain(
+            ticker=ticker,
+            expiry_start_date=expiry_start_date,
+            expiry_end_date=expiry_end_date,
+        )
+
+        options = data.get("options", [])
+        expiries_fetched = data.get("expiries_fetched", [])
+        all_expiries = data.get("all_expiries", [])
+
+        if not options and not expiries_fetched:
+            available = ", ".join(all_expiries[:10]) + ("..." if len(all_expiries) > 10 else "")
+            msg = f"No option contracts found for {ticker.upper()}"
+            if expiry_start_date:
+                msg += f" on or after {expiry_start_date}"
+            if expiry_end_date:
+                msg += f" up to {expiry_end_date}"
+            return [TextContent(type="text", text=f"{msg}.\nAvailable expiries: {available}")]
+
+        date_range = ""
+        if expiry_start_date or expiry_end_date:
+            date_range = f"  |  Range: {expiry_start_date or '(earliest)'} -> {expiry_end_date or '(latest)'}"
+
+        output_lines = [
+            f"Option Chain for {data.get('ticker', ticker).upper()}",
+            f"Expiries fetched: {', '.join(expiries_fetched) if expiries_fetched else 'N/A'}",
+            f"All available expiries: {', '.join(all_expiries[:10])}{'...' if len(all_expiries) > 10 else ''}",
+            f"Contracts: {len(options)}{date_range}",
+            "=" * 80,
+            "",
+        ]
+
+        from itertools import groupby
+
+        sorted_options = sorted(
+            options,
+            key=lambda o: (
+                o.get("expiry", ""),
+                o.get("type", ""),
+                o.get("strike") if o.get("strike") is not None else 0,
+            ),
+        )
+
+        for expiry, group in groupby(sorted_options, key=lambda o: o.get("expiry", "")):
+            contracts = list(group)
+            output_lines.append(f"{'=' * 40} Expiry: {expiry or 'N/A'} {'=' * 40}")
+            output_lines.append("")
+
+            for side in ("call", "put"):
+                side_contracts = [o for o in contracts if o.get("type") == side]
+                if not side_contracts:
+                    continue
+
+                output_lines.append(f"--- {side.upper()}S ---")
+                header = (
+                    f"{'Strike':>8}  {'Bid':>7}  {'Ask':>7}  {'Last':>7}  "
+                    f"{'Volume':>8}  {'OI':>8}  {'IV':>7}  {'Delta':>8}  {'Gamma':>8}  {'Theta':>8}"
+                )
+                output_lines.append(header)
+                output_lines.append("-" * len(header))
+
+                for contract in side_contracts:
+                    strike = f"${contract['strike']:.2f}" if contract.get("strike") is not None else "N/A"
+                    bid = f"${contract['bid']:.2f}" if contract.get("bid") is not None else "N/A"
+                    ask = f"${contract['ask']:.2f}" if contract.get("ask") is not None else "N/A"
+                    last = f"${contract['last']:.2f}" if contract.get("last") is not None else "N/A"
+                    volume = f"{contract['volume']:,}" if contract.get("volume") is not None else "N/A"
+                    oi = f"{contract['open_interest']:,}" if contract.get("open_interest") is not None else "N/A"
+                    iv = f"{contract['iv']:.2%}" if contract.get("iv") is not None else "N/A"
+                    delta = f"{contract['delta']:.4f}" if contract.get("delta") is not None else "N/A"
+                    gamma = f"{contract['gamma']:.6f}" if contract.get("gamma") is not None else "N/A"
+                    theta = f"{contract['theta']:.4f}" if contract.get("theta") is not None else "N/A"
+
+                    output_lines.append(
+                        f"{strike:>8}  {bid:>7}  {ask:>7}  {last:>7}  {volume:>8}  {oi:>8}  {iv:>7}  {delta:>8}  {gamma:>8}  {theta:>8}"
+                    )
+                output_lines.append("")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except Exception as e:
+        logger.error(f"Error in get_option_chain: {str(e)}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+
 def cli_main():
     """CLI entry point - supports stdio (default) and sse transport for Docker"""
     transport = os.getenv("MCP_TRANSPORT", "stdio")
@@ -1988,7 +2083,12 @@ def cli_main():
         host = os.getenv("MCP_HOST", "0.0.0.0")
         port = int(os.getenv("MCP_PORT", "8000"))
         logger.info(f"Starting MCP server with {transport} transport on {host}:{port}")
-        server.run(transport=transport, host=host, port=port)
+
+        # Configure host/port on server settings and call run with the supported
+        # transport-only signature.
+        server.settings.host = host
+        server.settings.port = port
+        server.run(transport=transport)
     else:
         server.run()
 

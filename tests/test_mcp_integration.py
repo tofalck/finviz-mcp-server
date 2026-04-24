@@ -79,6 +79,7 @@ class TestMCPServerIntegration:
             "get_market_overview",
             "get_relative_volume_stocks",
             "technical_analysis_screener",
+            "get_option_chain",
             "upcoming_earnings_screener",
             "custom_screener",
         ]
@@ -213,6 +214,39 @@ class TestMCPToolInterfaces:
 
             assert result is not None
             mock_client.assert_called_once()
+
+        # Option chain
+        with patch.object(FinvizClient, "get_option_chain") as mock_option_chain:
+            mock_option_chain.return_value = {
+                "ticker": "AAPL",
+                "expiries_fetched": ["2026-05-16"],
+                "all_expiries": ["2026-05-16", "2026-06-20"],
+                "options": [
+                    {
+                        "type": "call",
+                        "strike": 150.0,
+                        "expiry": "2026-05-16",
+                        "bid": 5.1,
+                        "ask": 5.3,
+                        "last": 5.2,
+                        "volume": 100,
+                        "open_interest": 1000,
+                        "iv": 0.25,
+                        "delta": 0.55,
+                        "gamma": 0.01,
+                        "theta": -0.03,
+                    }
+                ],
+            }
+
+            result = await server.call_tool("get_option_chain", {
+                "ticker": "AAPL",
+                "expiry_start_date": "2026-05-16",
+                "expiry_end_date": "2026-05-16",
+            })
+
+            assert result is not None
+            mock_option_chain.assert_called_once()
 
         # Test multiple stocks
         with patch.object(FinvizClient, "get_multiple_stocks_fundamentals") as mock_client:
