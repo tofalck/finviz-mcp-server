@@ -2353,21 +2353,27 @@ def upcoming_earnings_screener(
         logger.error(f"Error in upcoming_earnings_screener: {str(e)}")
         return [TextContent(type="text", text=f"Error: {str(e)}")]
 
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    """Safely coerce arbitrary values to float for formatting paths."""
+    try:
+        return float(value) if value is not None else default
+    except (ValueError, TypeError):
+        return default
+
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    """Safely coerce arbitrary values to int for formatting paths."""
+    try:
+        return int(value) if value is not None else default
+    except (ValueError, TypeError):
+        return default
+
 def _format_earnings_winners_list(results: List, params: Dict[str, Any]) -> List[str]:
     """決算後上昇銘柄をリスト形式でフォーマット"""
-    
-    # 安全に数値を取得するヘルパー関数
-    def safe_float(value, default=0.0):
-        try:
-            return float(value) if value is not None else default
-        except (ValueError, TypeError):
-            return default
-    
-    def safe_int(value, default=0):
-        try:
-            return int(value) if value is not None else default
-        except (ValueError, TypeError):
-            return default
+
+    safe_float = _safe_float
+    safe_int = _safe_int
     
     # パラメータを安全に取得
     min_price = safe_float(params.get('min_price', 10))

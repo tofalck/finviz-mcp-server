@@ -238,6 +238,53 @@ class FinvizClient:
                 return int(value)
         except ValueError:
             return None
+
+    def _coerce_float(self, value: Any, percent_as_ratio: bool = False) -> Optional[float]:
+        """Convert mixed numeric input to float safely.
+
+        Supports plain numbers, strings with commas/currency/units/percent,
+        and returns None for empty/invalid values.
+        """
+        if value is None:
+            return None
+
+        if isinstance(value, (int, float)):
+            return float(value)
+
+        text = str(value).strip()
+        if text in ("", "-", "N/A", "None"):
+            return None
+
+        cleaned = self._clean_numeric_value(text)
+        if cleaned is None:
+            return None
+
+        result = float(cleaned)
+        if percent_as_ratio and text.endswith('%'):
+            return result / 100.0
+        return result
+
+    def _coerce_int(self, value: Any) -> Optional[int]:
+        """Convert mixed numeric input to int safely."""
+        number = self._coerce_float(value)
+        if number is None:
+            return None
+        try:
+            return int(number)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _normalize_option_type(raw_type: Any) -> Optional[str]:
+        """Normalize option side representations to call/put."""
+        if raw_type is None:
+            return None
+        value = str(raw_type).strip().lower()
+        if value in ("c", "call", "calls"):
+            return "call"
+        if value in ("p", "put", "puts"):
+            return "put"
+        return value or None
     
 
     
@@ -1468,63 +1515,26 @@ class FinvizClient:
                 params["auth"] = api_key
             return params
 
-        def _as_float(value: Any) -> Optional[float]:
-            if value is None:
-                return None
-            if isinstance(value, (int, float)):
-                return float(value)
-            text = str(value).strip().replace(",", "")
-            if text in ("", "-", "N/A", "None"):
-                return None
-            if text.endswith("%"):
-                try:
-                    return float(text[:-1]) / 100.0
-                except ValueError:
-                    return None
-            try:
-                return float(text)
-            except ValueError:
-                return None
-
-        def _as_int(value: Any) -> Optional[int]:
-            number = _as_float(value)
-            if number is None:
-                return None
-            try:
-                return int(number)
-            except (ValueError, TypeError):
-                return None
-
-        def _norm_type(raw_type: Any) -> Optional[str]:
-            if raw_type is None:
-                return None
-            value = str(raw_type).strip().lower()
-            if value in ("c", "call", "calls"):
-                return "call"
-            if value in ("p", "put", "puts"):
-                return "put"
-            return value or None
-
         def _normalize_option(raw: Dict[str, Any], fallback_expiry: Optional[str] = None) -> Dict[str, Any]:
             expiry = raw.get("expiry") or raw.get("exDate") or raw.get("expiration") or fallback_expiry or ""
             return {
-                "type": _norm_type(raw.get("type") or raw.get("optionType") or raw.get("side")),
-                "strike": _as_float(raw.get("strike") or raw.get("strikePrice")),
+                "type": self._normalize_option_type(raw.get("type") or raw.get("optionType") or raw.get("side")),
+                "strike": self._coerce_float(raw.get("strike") or raw.get("strikePrice")),
                 "expiry": str(expiry),
-                "bid": _as_float(raw.get("bid") or raw.get("bidPrice")),
-                "ask": _as_float(raw.get("ask") or raw.get("askPrice")),
-                "last": _as_float(raw.get("last") or raw.get("lastClose") or raw.get("lastPrice")),
-                "last_change": _as_float(raw.get("last_change") or raw.get("lastChange")),
-                "volume": _as_int(raw.get("volume") or raw.get("lastVolume")),
-                "open_interest": _as_int(raw.get("open_interest") or raw.get("openInterest")),
-                "avg_volume": _as_int(raw.get("avg_volume") or raw.get("averageVolume")),
-                "iv": _as_float(raw.get("iv") or raw.get("impliedVolatility")),
-                "delta": _as_float(raw.get("delta")),
-                "gamma": _as_float(raw.get("gamma")),
-                "theta": _as_float(raw.get("theta")),
-                "vega": _as_float(raw.get("vega")),
-                "rho": _as_float(raw.get("rho")),
-                "lambda": _as_float(raw.get("lambda")),
+                "bid": self._coerce_float(raw.get("bid") or raw.get("bidPrice")),
+                "ask": self._coerce_float(raw.get("ask") or raw.get("askPrice")),
+                "last": self._coerce_float(raw.get("last") or raw.get("lastClose") or raw.get("lastPrice")),
+                "last_change": self._coerce_float(raw.get("last_change") or raw.get("lastChange")),
+                "volume": self._coerce_int(raw.get("volume") or raw.get("lastVolume")),
+                "open_interest": self._coerce_int(raw.get("open_interest") or raw.get("openInterest")),
+                "avg_volume": self._coerce_int(raw.get("avg_volume") or raw.get("averageVolume")),
+                "iv": self._coerce_float(raw.get("iv") or raw.get("impliedVolatility"), percent_as_ratio=True),
+                "delta": self._coerce_float(raw.get("delta")),
+                "gamma": self._coerce_float(raw.get("gamma")),
+                "theta": self._coerce_float(raw.get("theta")),
+                "vega": self._coerce_float(raw.get("vega")),
+                "rho": self._coerce_float(raw.get("rho")),
+                "lambda": self._coerce_float(raw.get("lambda")),
                 "last_time": raw.get("last_time") or raw.get("lastTime"),
             }
 
